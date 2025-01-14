@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ic-ticket",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "field1",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "field2",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
