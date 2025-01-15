@@ -1,5 +1,5 @@
 import { useLoaderData, json } from "@remix-run/react";
-import type { LoaderFunction, LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import {
@@ -27,7 +27,7 @@ if (!getApps().length) {
 
 const db = getFirestore(firebaseApp);
 
-export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => {
+export const loader= async ({ params }: LoaderFunctionArgs) => {
   const { uuid } = params;
 
   if (!uuid) {
