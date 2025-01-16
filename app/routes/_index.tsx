@@ -41,7 +41,7 @@ export default function Index() {
 
       // QRコードの生成
       setQrCode(window.location.origin + "/ticket/" + newUuid);
-      setName(""); // 入力フィールドをクリア
+      //setName(""); // 入力フィールドをクリア
     } catch (error) {
       console.error("Error creating ticket:", error);
       alert("チケットの発行に失敗しました。"); // エラーメッセージを表示
@@ -70,6 +70,7 @@ export default function Index() {
           <div>
             <h2>QRコード</h2>
             <QRCodeCanvas value={qrCode} size={256} level="H" /> {/* QRコードのサイズとエラー訂正レベルを指定 */}
+            <p>{ name }</p>
             <p>このQRコードを保存またはスクリーンショットしてください。</p>
           </div>
         )}
