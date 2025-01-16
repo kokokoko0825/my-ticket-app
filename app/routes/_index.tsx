@@ -2,6 +2,7 @@ import { useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { QRCodeCanvas } from "qrcode.react";
 import type { MetaFunction } from "@remix-run/node";
+import * as styles from "./styles.css";
 import {
   Links,
   LiveReload,
@@ -58,30 +59,59 @@ export default function Index() {
       <head>
         <Meta />
         <Links />
+        <link href="https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap" rel="stylesheet"></link>
       </head>
       <body>
-        <h1>電子チケット発行</h1>
-        <input
-          type="text"
-          placeholder="名前"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <button onClick={generateTicket}>チケット発行</button>
-
-        {/* QRコードの表示 */}
-        {qrCode && (
-          <div>
-            <h2>QRコード</h2>
-            <QRCodeCanvas value={qrCode} size={256} level="H" /> {/* QRコードのサイズとエラー訂正レベルを指定 */}
-            <p>{ name }</p>
-            <p>このQRコードを保存またはスクリーンショットしてください。</p>
+        <div className={styles.window}>
+          <div className={styles.windowTitle}>電子チケット発行</div>
+          <div className={styles.inputContainer}>
+            <input className={styles.input}
+              type="text"
+              placeholder="名前"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <button onClick={generateTicket}>チケット発行</button>
           </div>
-        )}
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+          {/* QRコードの表示 */}
+          {qrCode && (
+            <div>
+              <p>下記の画像を保存またはスクリーンショットしてください。</p>
+              <div className={styles.ticket}>
+                <div className={styles.text}>{ name }さん用入場チケット</div>
+                <div className={styles.title}>BorderLess</div>
+                <div className={styles.placeContainer}>
+                  <div className={styles.text}>in Suzuka Sound Stage</div>
+                </div>
+                <div className={styles.otherContainer}>
+                  <div className={styles.textContainer}>
+                    <div className={styles.text}>Date: 3/8 ,3/9</div>
+                    <div className={styles.text}>Open:</div>
+                    <div className={styles.text}>/ Day1, 14:30 ~ /</div>
+                    <div className={styles.text}>/ Day2, 15:30 ~ /</div>
+                    <div className={styles.text}>Price: 1000円 + 1dr</div>
+                  </div>
+                  <QRCodeCanvas value={qrCode} size={75} level="H" />
+                </div>
+              </div>
+              <div className={styles.ticket}>
+                <div className={styles.backContainer}>
+                  <div className={styles.text}>*注意事項*</div>
+                  <div className={styles.text}>・当日はドリンク代として500円を持ってきてください。</div>
+                  <div className={styles.text}>・ライブハウスには駐車場がないので電車、バスの利用をお願いします。</div>
+                  <div className={styles.locationTextContainer}>
+                    <div className={styles.text}>会場の場所はこちら↓</div>
+                    <a className={styles.text} href="https://maps.app.goo.gl/ZfY37uVqmYHM926Y8">Suzuka Sound Stage</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <ScrollRestoration />
+          <Scripts />
+          <LiveReload />
+        </div>
       </body>
     </html>
   );

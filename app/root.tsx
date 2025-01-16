@@ -97,13 +97,13 @@ export default function App() {
         {user ? (
           <div>
             <p>Welcome {user.displayName}!</p>
-            <button onClick={signOutUser}>Sign Out</button>
+            <button onClick={signOutUser}>サインアウトする？</button>
             <Outlet />
           </div>
         ) : (
             <div>
-              <p>Please Log In</p>
-              <button onClick={signInWithGoogle}>SignIn for Google</button>
+              <p>ログインしてね</p>
+              <button onClick={signInWithGoogle}>ここをクリックでサインイン</button>
             </div>
         )}
         <ScrollRestoration />
