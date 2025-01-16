@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import {
   initializeApp,
   getApps,
   FirebaseApp,
 } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import type { MetaFunction } from "@remix-run/node";
 
 import {
@@ -17,6 +19,7 @@ import {
 import type { LinksFunction } from "@remix-run/node";
 
 import "./tailwind.css";
+import firebase from "firebase/compat/app";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCNs9z34dPvegE073RHwmZw3CLYmJ-NsC8",
@@ -36,6 +39,7 @@ if (!getApps().length) {
 }
 
 export const db = getFirestore(firebaseApp);
+export const auth = getAuth(firebaseApp);
 
 export const meta: MetaFunction = () => {
   return[
@@ -59,6 +63,30 @@ export const links: LinksFunction = () => [
 ];
 
 export default function App() {
+  const [user, setUser] = useState<firebase.User | null>(null);
+
+  useEffect(() => { 
+    const unsubscribe = onAuthStateChanged(auth, (user) => setUser(user));
+    return () => unsubscribe();
+  }, []);
+  
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
+
+  const signOutUser = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <html lang="ja">
       <head>
@@ -66,7 +94,18 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
+        {user ? (
+          <div>
+            <p>Welcome {user.displayName}!</p>
+            <button onClick={signOutUser}>Sign Out</button>
+            <Outlet />
+          </div>
+        ) : (
+            <div>
+              <p>Please Log In</p>
+              <button onClick={signInWithGoogle}>SignIn for Google</button>
+            </div>
+        )}
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

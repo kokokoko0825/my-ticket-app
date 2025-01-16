@@ -10,7 +10,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import { db } from "../root";
+import { db, auth } from "../root";
 
 export const meta: MetaFunction = () => {
   return [
@@ -33,10 +33,15 @@ export default function Index() {
 
     try {
       // Firestoreにデータを保存
+      if (!auth.currentUser) { 
+        alert("ログインしてください。");
+        return;
+      }
       await setDoc(doc(db, "tickets", newUuid), {
         name: name,
         id: newUuid,
         status: "未",
+        createdBy: auth.currentUser.uid,
       });
 
       // QRコードの生成
