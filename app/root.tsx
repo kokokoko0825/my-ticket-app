@@ -66,7 +66,7 @@ export default function App() {
   const [user, setUser] = useState<firebase.User | null>(null);
 
   useEffect(() => { 
-    const unsubscribe = onAuthStateChanged(auth, (user) => setUser(user));
+    const unsubscribe = onAuthStateChanged(auth, (user) => setUser(user as firebase.User | null));
     return () => unsubscribe();
   }, []);
   
