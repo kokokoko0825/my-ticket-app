@@ -13,6 +13,14 @@ export const windowTitle = style({
     fontSize: "24px",
 });
 
+export const button = style({
+    display: "flex",
+    background: "#007bff",
+    border: "none",
+    padding: "5px",
+    borderRadius: "10px",
+});
+
 export const inputContainer = style({
     display: "flex",
     flexDirection: "row",
@@ -28,6 +36,12 @@ export const ticket = style({
     height: "181.319px",
     flexDirection: "column",
     background: vars.color.bgMask,
+});
+
+export const text1 = style({
+    display: "flex",
+    fontSize: "11px",
+    fontFamily: vars.typography.fontFamily.roboto,
 });
 
 export const text = style({

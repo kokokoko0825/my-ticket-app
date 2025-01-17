@@ -1,5 +1,5 @@
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../root";
+import { db, auth } from "../root";
 import { useState,useEffect } from "react";
 import { useParams } from "@remix-run/react";
 
@@ -31,6 +31,11 @@ export default function Ticket() {
         setStatus("error");
         setMessage("Ticket already used");
         return;
+      }
+
+      if (ticketData.createdBy !== auth.currentUser?.uid) { 
+        setStatus("error");
+        setMessage("Googleアカウントが違います");
       }
 
       await updateDoc(ticketRef, { status: "済" });

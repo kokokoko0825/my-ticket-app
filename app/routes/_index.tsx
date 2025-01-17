@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, query, where, getDocs, collection } from "firebase/firestore";
 import { QRCodeCanvas } from "qrcode.react";
 import type { MetaFunction } from "@remix-run/node";
 import * as styles from "./styles.css";
@@ -30,9 +30,18 @@ export default function Index() {
       alert("名前を入力してください。");
       return;
     }
-    const newUuid = crypto.randomUUID(); // UUIDの生成
 
     try {
+      const q = query(collection(db, "tickets"), where("name", "==", name));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) { 
+        alert("同じ名前のチケットが既に発行されています。");
+        return;
+      }
+
+      const newUuid = crypto.randomUUID(); // UUIDの生成
+
       // Firestoreにデータを保存
       if (!auth.currentUser) { 
         alert("ログインしてください。");
@@ -72,8 +81,9 @@ export default function Index() {
               onChange={(e) => setName(e.target.value)}
               required
             />
-            <button onClick={generateTicket}>チケット発行</button>
+            <button className={styles.button} onClick={generateTicket}>チケット発行</button>
           </div>
+          <div className={styles.text1}>*名前は必ずフルネーム漢字で入力して下さい。</div>
           {/* QRコードの表示 */}
           {qrCode && (
             <div>
@@ -102,7 +112,7 @@ export default function Index() {
                   <div className={styles.text}>・ライブハウスには駐車場がないので電車、バスの利用をお願いします。</div>
                   <div className={styles.locationTextContainer}>
                     <div className={styles.text}>会場の場所はこちら↓</div>
-                    <a className={styles.text} href="https://maps.app.goo.gl/ZfY37uVqmYHM926Y8">Suzuka Sound Stage</a>
+                    <div className={styles.text}>〒510-0256 三重県鈴鹿市磯山1-9-8</div>
                   </div>
                 </div>
               </div>

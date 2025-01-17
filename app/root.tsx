@@ -7,7 +7,6 @@ import {
 import { getFirestore } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import type { MetaFunction } from "@remix-run/node";
-
 import {
   Links,
   LiveReload,
@@ -17,9 +16,9 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
-
 import "./tailwind.css";
 import firebase from "firebase/compat/app";
+import * as styles from "./styles.css";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCNs9z34dPvegE073RHwmZw3CLYmJ-NsC8",
@@ -94,21 +93,23 @@ export default function App() {
         <Links />
       </head>
       <body>
-        {user ? (
-          <div>
-            <p>Welcome {user.displayName}!</p>
-            <button onClick={signOutUser}>サインアウトする？</button>
-            <Outlet />
-          </div>
-        ) : (
+        <div className={styles.container}>
+          {user ? (
             <div>
-              <p>ログインしてね</p>
-              <button onClick={signInWithGoogle}>ここをクリックでサインイン</button>
+              <p>Welcome {user.displayName}!</p>
+              <button className={styles.button} onClick={signOutUser}>ログアウト</button>
+              <Outlet />
             </div>
-        )}
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+          ) : (
+              <div>
+                <p>ログインしてね</p>
+                <button className={styles.button} onClick={signInWithGoogle}>ログイン</button>
+              </div>
+          )}
+          <ScrollRestoration />
+          <Scripts />
+          <LiveReload />
+        </div>
       </body>
     </html>
   );
