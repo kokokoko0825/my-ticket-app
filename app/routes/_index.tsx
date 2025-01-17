@@ -31,8 +31,13 @@ export default function Index() {
       return;
     }
 
+    if (!auth.currentUser) { 
+    alert("ログインしてください。");
+    return;
+    }
+
     try {
-      const q = query(collection(db, "tickets"), where("name", "==", name));
+      const q = query(collection(db, "tickets"), where("name", "==", name), where("createdBy", "==", auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) { 
@@ -43,10 +48,6 @@ export default function Index() {
       const newUuid = crypto.randomUUID(); // UUIDの生成
 
       // Firestoreにデータを保存
-      if (!auth.currentUser) { 
-        alert("ログインしてください。");
-        return;
-      }
       await setDoc(doc(db, "tickets", newUuid), {
         name: name,
         id: newUuid,
