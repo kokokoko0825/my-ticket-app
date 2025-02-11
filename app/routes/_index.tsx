@@ -88,7 +88,7 @@ export default function Index() {
           {/* QRコードの表示 */}
           {qrCode && (
             <div>
-              <p>下記の画像を保存またはスクリーンショットしてください。</p>
+              <p>下記の画像をスクリーンショットしてください。</p>
               <div className={styles.ticket}>
                 <div className={styles.text}>{ name }さん用入場チケット</div>
                 <div className={styles.title}>BorderLess</div>
