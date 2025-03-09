@@ -3,14 +3,22 @@ import { vars } from "app/styles/theme.css";
 
 export const window = style({
     display: "flex",
-    width: "100%",
-    height: "100%",
+    width: "auto",
+    height: "auto",
     flexDirection: "column",
+    padding: "50px, 0"
 });
 
 export const windowTitle = style({
     color: "#FFFFFF",
     fontSize: "24px",
+    '@media': {
+        'screen and (max-width: 767px)': {
+            fontSize: "120px",
+        },
+        'screen and (max-width: 1020px) and (min-width: 768px)': {
+        }
+    },
 });
 
 export const button = style({
@@ -19,16 +27,30 @@ export const button = style({
     border: "none",
     padding: "5px",
     borderRadius: "10px",
+    '@media': {
+        'screen and (max-width: 767px)': {
+            fontSize: "120px",
+        }
+    }
 });
 
 export const inputContainer = style({
     display: "flex",
+    justifySelf: "stretch",
     flexDirection: "row",
     justifyContent:"start",
 });
 
 export const input = style({
     width: "300px",
+    color: "#FFFFFF",
+    '@media': {
+        'screen and (max-width: 767px)': {
+            width: "50%",
+            fontSize: "120px",
+        }
+    }
+    
 });
 
 export const ticket = style({
@@ -42,6 +64,12 @@ export const text1 = style({
     display: "flex",
     fontSize: "11px",
     fontFamily: vars.typography.fontFamily.roboto,
+    color: "#FFFFFF",
+    '@media': {
+        'screen and (max-width: 767px)': {
+            fontSize: "50px",
+        }
+    }
 });
 
 export const text = style({
@@ -98,4 +126,13 @@ export const locationTextContainer = style({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
+});
+
+export const header1 = style({
+    '@media': {
+        'screen and (max-width: 767px)': {
+            fontSize: "50px",
+            color: "#FFFFFF",
+        }
+    }
 });

@@ -2,6 +2,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../root";
 import { useState,useEffect } from "react";
 import { useParams } from "@remix-run/react";
+import * as styles from  "./styles.css"
 
 export default function Ticket() {
   const { uuid } = useParams();
@@ -12,7 +13,7 @@ export default function Ticket() {
     const fetchTicket = async () => {
       if (!uuid) {
         setStatus("error");
-        setMessage("UUID is required");
+        setMessage("UUIDが必要です。(責任者に連絡してください。 電話番号 080-2596-4045)");
         return;
       }
 
@@ -21,7 +22,7 @@ export default function Ticket() {
 
       if (!ticketSnap.exists()) {
         setStatus("error");
-        setMessage("Ticket not found");
+        setMessage("チケットが見つかりません。(責任者に連絡してください。 電話番号 080-2596-4045)");
         return;
       }
 
@@ -29,18 +30,19 @@ export default function Ticket() {
 
       if (ticketData.status === "済") {
         setStatus("error");
-        setMessage("Ticket already used");
+        setMessage("チケットは既に使用済みです。(責任者に連絡してください。 電話番号 080-2596-4045)");
         return;
       }
-
+    /*
       if (ticketData.createdBy !== auth.currentUser?.uid) { 
         setStatus("error");
-        setMessage("Googleアカウントが違います");
+        setMessage("Googleアカウントが違います()");
       }
+    */
 
       await updateDoc(ticketRef, { status: "済" });
       setStatus("success");
-      setMessage("Ticket updated");
+      setMessage("更新されました。");
     };
 
     fetchTicket();
@@ -49,9 +51,9 @@ export default function Ticket() {
   return (
     <div>
       {status === "success" ? (
-        <h1>更新完了</h1>
+        <h1 className={styles.header1}>更新完了</h1>
       ) : (
-        <h1>エラー: {message}</h1>
+        <h1 className={styles.header1}>エラー: {message}</h1>
       )}
     </div>
   );

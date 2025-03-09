@@ -96,7 +96,7 @@ export default function App() {
         <div className={styles.container}>
           {user ? (
             <div>
-              <p>Welcome {user.displayName}!</p>
+              <p className={styles.title}>Welcome {user.displayName}!</p>
               <button className={styles.button} onClick={signOutUser}>ログアウト</button>
               <Outlet />
             </div>
