@@ -13,10 +13,8 @@ export const windowTitle = style({
     color: "#FFFFFF",
     fontSize: "24px",
     '@media': {
-        'screen and (max-width: 767px)': {
-            fontSize: "120px",
-        },
-        'screen and (max-width: 1020px) and (min-width: 768px)': {
+        'screen and (max-width: 1020px)': {
+            fontSize: "120px"
         }
     },
 });
@@ -28,7 +26,7 @@ export const button = style({
     padding: "5px",
     borderRadius: "10px",
     '@media': {
-        'screen and (max-width: 767px)': {
+        'screen and (max-width: 1020px)': {
             fontSize: "120px",
         }
     }
@@ -45,7 +43,7 @@ export const input = style({
     width: "300px",
     color: "#FFFFFF",
     '@media': {
-        'screen and (max-width: 767px)': {
+        'screen and (max-width: 1020px)': {
             width: "50%",
             fontSize: "120px",
         }
@@ -66,7 +64,7 @@ export const text1 = style({
     fontFamily: vars.typography.fontFamily.roboto,
     color: "#FFFFFF",
     '@media': {
-        'screen and (max-width: 767px)': {
+        'screen and(max-width: 1020px)': {
             fontSize: "50px",
         }
     }
@@ -129,8 +127,9 @@ export const locationTextContainer = style({
 });
 
 export const header1 = style({
+
     '@media': {
-        'screen and (max-width: 767px)': {
+        'screen and (max-width: 1020px)': {
             fontSize: "50px",
             color: "#FFFFFF",
         }

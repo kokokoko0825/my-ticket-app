@@ -19,6 +19,7 @@ export const title = style({
             fontSize: "50px",
         },
         'screen and (max-width: 1020px) and (min-width: 768px)': {
+            fontSize: "50px"
         }
     },
 });
