@@ -64,7 +64,7 @@ export const text1 = style({
     fontFamily: vars.typography.fontFamily.roboto,
     color: "#FFFFFF",
     '@media': {
-        'screen and(max-width: 1020px)': {
+        'screen and (max-width: 1020px)': {
             fontSize: "50px",
         }
     }
