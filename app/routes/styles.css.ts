@@ -14,7 +14,7 @@ export const windowTitle = style({
     fontSize: "24px",
     '@media': {
         'screen and (max-width: 1020px)': {
-            fontSize: "120px"
+            fontSize: "50px"
         }
     },
 });
@@ -27,7 +27,7 @@ export const button = style({
     borderRadius: "10px",
     '@media': {
         'screen and (max-width: 1020px)': {
-            fontSize: "120px",
+            fontSize: "50px",
         }
     }
 });
@@ -45,7 +45,7 @@ export const input = style({
     '@media': {
         'screen and (max-width: 1020px)': {
             width: "50%",
-            fontSize: "120px",
+            fontSize: "50px",
         }
     }
     
@@ -65,7 +65,7 @@ export const text1 = style({
     color: "#FFFFFF",
     '@media': {
         'screen and (max-width: 1020px)': {
-            fontSize: "50px",
+            fontSize: "30px",
         }
     }
 });
@@ -130,7 +130,7 @@ export const header1 = style({
 
     '@media': {
         'screen and (max-width: 1020px)': {
-            fontSize: "50px",
+            fontSize: "30px",
             color: "#FFFFFF",
         }
     }
