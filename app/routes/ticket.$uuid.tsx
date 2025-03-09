@@ -30,7 +30,7 @@ export default function Ticket() {
 
       if (ticketData.status === "済") {
         setStatus("error");
-        setMessage("チケットは既に使用済みです。(責任者に連絡してください。 電話番号 080-2596-4045)");
+        setMessage("チケットは既に使用済みです。<br />(責任者に連絡してください。 電話番号 080-2596-4045)");
         return;
       }
     /*
