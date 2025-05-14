@@ -6,10 +6,6 @@
 ```sh
 npm install
 ```
-or
-```sh
-pnpm install
-```
 
 ## Development
 
