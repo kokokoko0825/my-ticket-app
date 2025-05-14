@@ -2,6 +2,15 @@
 
 - 📖 [Remix docs](https://remix.run/docs)
 
+## after clone
+```sh
+npm install
+```
+or
+```sh
+pnpm install
+```
+
 ## Development
 
 Run the dev server:
