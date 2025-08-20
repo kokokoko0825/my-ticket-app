@@ -72,7 +72,8 @@ export default function OwnerDashboard() {
     try {
       setCollectionsLoading(true);
       // 既知のコレクションを設定（基本コレクション + 動的に作成されるイベントコレクション）
-      const baseCollections = ["tickets", "users", "events", "products"];
+      // ticketsコレクションをダッシュボードから除外
+      const baseCollections = ["users", "events", "products"];
       
       // LocalStorageから以前に作成されたコレクション名を取得
       const savedCollections = JSON.parse(localStorage.getItem('customCollections') || '[]');
@@ -81,6 +82,11 @@ export default function OwnerDashboard() {
       // 各コレクションが存在するかチェック
       const existingCollections = [];
       for (const collectionName of knownCollections) {
+        // ticketsコレクションは除外
+        if (collectionName === "tickets") {
+          continue;
+        }
+        
         try {
           const snapshot = await getDocs(query(collection(db, collectionName)));
           if (!snapshot.empty) {
@@ -92,10 +98,10 @@ export default function OwnerDashboard() {
         }
       }
       
-      setCollections(existingCollections.length > 0 ? existingCollections : ["tickets"]);
+      setCollections(existingCollections.length > 0 ? existingCollections : ["users"]);
     } catch (error) {
       console.error("Error fetching collections:", error);
-      setCollections(["tickets"]); // フォールバック
+      setCollections(["users"]); // フォールバック（ticketsから変更）
     } finally {
       setCollectionsLoading(false);
     }
@@ -150,7 +156,7 @@ export default function OwnerDashboard() {
       }
 
       const eventCollections = collections.filter(col => 
-        col !== "tickets" && col !== "users" && col !== "events" && col !== "products"
+        col !== "users" && col !== "events" && col !== "products"
       );
 
       const eventsWithTicketsData: EventWithTickets[] = [];
@@ -882,7 +888,7 @@ export default function OwnerDashboard() {
     setFilteredEventsWithTickets(filteredEvents);
 
     // イベントコレクション選択時のチケットフィルタリング
-    const baseCollections = ["tickets", "users", "events", "products", "events_overview"];
+    const baseCollections = ["users", "events", "products", "events_overview"];
     if (!baseCollections.includes(selectedCollection)) {
       let filteredTickets = currentEventTickets;
 
