@@ -39,6 +39,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [createdTicket, setCreatedTicket] = useState<TicketData | null>(null);
   const [showTicketDisplay, setShowTicketDisplay] = useState(false);
+  const [currentEventCollectionName, setCurrentEventCollectionName] = useState<string>("");
+  const [currentEventUuid, setCurrentEventUuid] = useState<string>("");
 
   // イベントタイトルが空の場合はメインページにリダイレクト
   useEffect(() => {
@@ -236,6 +238,8 @@ export default function AdminPage() {
       console.log("Current createdTicket state:", createdTicket);
       
       setCreatedTicket(ticketData);
+      setCurrentEventCollectionName(eventCollectionName);
+      setCurrentEventUuid(eventUuid);
       setShowTicketDisplay(true);
       
       console.log("Ticket display should now be visible");
@@ -784,7 +788,7 @@ export default function AdminPage() {
                     )}
                   </div>
                   <QRCodeCanvas 
-                    value={`${window.location.origin}/ticket/${createdTicket.uuid}`} 
+                    value={`${window.location.origin}/ticket/${currentEventCollectionName}/${currentEventUuid}/${createdTicket.uuid}`} 
                     size={75} 
                     level="H" 
                   />

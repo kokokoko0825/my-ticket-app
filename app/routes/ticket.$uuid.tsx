@@ -25,7 +25,7 @@ export default function Ticket() {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [showDebugInfo, setShowDebugInfo] = useState(false);
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchAndUpdateTicket = async () => {
       if (!uuid) {
         setStatus("error");
@@ -100,8 +100,8 @@ export default function Ticket() {
         // 新形式で見つからない場合のみ旧形式をチェック
         if (!foundTicketData) {
           console.log("🔄 New format search failed, trying legacy format...");
-          const ticketSnap = await getDoc(ticketRef);
-          
+      const ticketSnap = await getDoc(ticketRef);
+
           if (ticketSnap.exists()) {
             foundTicketData = ticketSnap.data() as TicketData;
             console.log("✅ Found ticket in legacy format (tickets collection):", foundTicketData);
@@ -151,21 +151,21 @@ export default function Ticket() {
           
           console.error("❌ Ticket not found anywhere. Debug info:", debugDetails);
           setDebugInfo(debugDetails);
-          setStatus("error");
+        setStatus("error");
           setMessage("チケットが見つかりません。\n\n「デバッグ情報を表示」をタップして詳細を確認してください。");
-          return;
-        }
+        return;
+      }
 
         // statusまたはstateフィールドをチェック（admin.tsxはstateを使用）
         const currentStatus = foundTicketData.status || foundTicketData.state || "未";
         console.log("📊 Current ticket status:", currentStatus);
 
         if (currentStatus === "済") {
-          setStatus("error");
+        setStatus("error");
           setMessage("このチケットは既に使用済みです。重複入場はできません。");
           setTicketData({ ...foundTicketData, status: currentStatus });
-          return;
-        }
+        return;
+      }
 
         // ステータスを「済」に更新（admin.tsxがstateを使用している場合はそちらも更新）
         const updateData: Record<string, string> = {};
@@ -235,7 +235,21 @@ export default function Ticket() {
         // よくある組み合わせ
         "grasslive", "forestlive", "springlive", "summerlive", "autumnlive", "winterlive",
         // 草通り越して林関連
-        "草", "林", "tree", "forest", "grass", "nature"
+        "草", "林", "tree", "forest", "grass", "nature",
+        // ひらがなパターン
+        "あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "が", "ぎ", "ぐ", "げ", "ご",
+        "さ", "し", "す", "せ", "そ", "ざ", "じ", "ず", "ぜ", "ぞ", "た", "ち", "つ", "て", "と",
+        "だ", "ぢ", "づ", "で", "ど", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ",
+        "ば", "び", "ぶ", "べ", "ぼ", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ", "ま", "み", "む", "め", "も",
+        "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ", "ゐ", "ゑ", "を", "ん",
+        // よくあるひらがな組み合わせ
+        "あい", "いち", "うた", "えん", "おと", "かお", "きみ", "くに", "げん", "こころ",
+        "さくら", "しお", "すず", "せん", "その", "たか", "ちか", "つき", "てん", "とも",
+        "なな", "にじ", "ぬま", "ねこ", "のぞ", "はな", "ひめ", "ふゆ", "へい", "ほし",
+        "まち", "みず", "むら", "めぐ", "もり", "やま", "ゆき", "よる", "らん", "りん",
+        "るい", "れい", "ろく", "わか", "じゃに", "じゃにー", "じゃん", "ちゃん", "くん",
+        // 特定のイベント名
+        "じゃに", "ジャニ", "jannie", "jani", "JANI", "JANNIE"
       ];
       
       // 各パターンを試行
@@ -274,6 +288,59 @@ export default function Ticket() {
       }
       
       console.log("🔍 All discovered collections:", discoveredCollections);
+      
+      // もし何も見つからない場合、より広範囲な検索を実行
+      if (discoveredCollections.length === 0) {
+        console.log("🔍 No collections found with patterns, trying broader search...");
+        
+        // より包括的な文字パターンで検索
+        const broadPatterns = [];
+        
+        // ひらがな3文字まで総当たり（よくある組み合わせ）
+        const hiraganaChars = ["あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "が", "ぎ", "ぐ", "げ", "ご",
+          "さ", "し", "す", "せ", "そ", "ざ", "じ", "ず", "ぜ", "ぞ", "た", "ち", "つ", "て", "と",
+          "だ", "ぢ", "づ", "で", "ど", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ",
+          "ば", "び", "ぶ", "べ", "ぼ", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ", "ま", "み", "む", "め", "も",
+          "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ", "を", "ん"];
+        
+        // よくあるひらがな2文字組み合わせ
+        const commonPairs = ["じゃ", "ちゃ", "しゃ", "にゃ", "ひゃ", "みゃ", "りゃ", "ぎゃ", "びゃ", "ぴゃ",
+          "じゅ", "ちゅ", "しゅ", "にゅ", "ひゅ", "みゅ", "りゅ", "ぎゅ", "びゅ", "ぴゅ",
+          "じょ", "ちょ", "しょ", "にょ", "ひょ", "みょ", "りょ", "ぎょ", "びょ", "ぴょ"];
+        
+        for (const pair of commonPairs) {
+          for (const char of hiraganaChars.slice(0, 20)) { // パフォーマンスのため制限
+            broadPatterns.push(pair + char);
+          }
+        }
+        
+        // さらに、カタカナパターンも追加
+        const katakanaPatterns = ["ア", "イ", "ウ", "エ", "オ", "カ", "キ", "ク", "ケ", "コ", "ガ", "ギ", "グ", "ゲ", "ゴ",
+          "サ", "シ", "ス", "セ", "ソ", "ザ", "ジ", "ズ", "ゼ", "ゾ", "タ", "チ", "ツ", "テ", "ト",
+          "ダ", "ヂ", "ヅ", "デ", "ド", "ナ", "ニ", "ヌ", "ネ", "ノ", "ハ", "ヒ", "フ", "ヘ", "ホ",
+          "バ", "ビ", "ブ", "ベ", "ボ", "パ", "ピ", "プ", "ペ", "ポ", "マ", "ミ", "ム", "メ", "モ",
+          "ヤ", "ユ", "ヨ", "ラ", "リ", "ル", "レ", "ロ", "ワ", "ヲ", "ン"];
+        
+        broadPatterns.push(...katakanaPatterns.slice(0, 30)); // パフォーマンスのため制限
+        
+        console.log("🔍 Trying broader patterns:", broadPatterns.length, "patterns");
+        
+        for (const pattern of broadPatterns) {
+          try {
+            const snapshot = await getDocs(collection(db, pattern));
+            if (!snapshot.empty) {
+              console.log(`✅ Found collection with broad search: ${pattern} (${snapshot.docs.length} documents)`);
+              discoveredCollections.push(pattern);
+              // パフォーマンスのため、いくつか見つかったら停止
+              if (discoveredCollections.length >= 10) break;
+            }
+          } catch (_error) {
+            // 存在しないコレクションは無視
+          }
+        }
+      }
+      
+      console.log("🔍 Final discovered collections:", discoveredCollections);
       return discoveredCollections;
     } catch (error) {
       console.error("Error discovering collections:", error);
