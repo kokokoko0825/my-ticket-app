@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "@remix-run/react";
 
 interface TicketData {
-  uuid: string;
+  uuid?: string;
   name: string;
   bandName?: string;
-  status: "未" | "済";
+  status?: "未" | "済";
+  state?: "未" | "済"; // admin.tsxで使用されるフィールド名
   createdBy: string;
   eventTitle?: string;
   eventId?: string;
+  id?: string; // 一部のチケットで使用される可能性
 }
 
 export default function Ticket() {
@@ -30,52 +32,91 @@ export default function Ticket() {
       }
 
       try {
+        console.log("🔍 Searching for ticket UUID:", uuid);
+        
         // まず旧形式（直接ticketsコレクション）をチェック
         let ticketRef = doc(db, "tickets", uuid);
         const ticketSnap = await getDoc(ticketRef);
         let foundTicketData: TicketData | null = null;
+        const searchDetails: string[] = [];
 
         if (ticketSnap.exists()) {
           foundTicketData = ticketSnap.data() as TicketData;
+          console.log("✅ Found ticket in legacy format (tickets collection):", foundTicketData);
+          searchDetails.push("Legacy format: Found");
         } else {
+          console.log("❌ Ticket not found in legacy format (tickets collection)");
+          searchDetails.push("Legacy format: Not found");
+          
           // 新形式（イベントコレクション/イベントUUID/tickets/チケットUUID）を検索
           const collections = await getKnownCollections();
+          console.log("🔍 Searching in collections:", collections);
           
           for (const collectionName of collections) {
-            const eventSnapshot = await getDocs(collection(db, collectionName));
-            
-            for (const eventDoc of eventSnapshot.docs) {
-              const ticketsRef = collection(db, collectionName, eventDoc.id, "tickets");
-              const ticketsSnapshot = await getDocs(ticketsRef);
+            console.log(`🔍 Checking collection: ${collectionName}`);
+            try {
+              const eventSnapshot = await getDocs(collection(db, collectionName));
+              console.log(`📁 Collection ${collectionName} has ${eventSnapshot.docs.length} events`);
               
-              for (const ticketDoc of ticketsSnapshot.docs) {
-                if (ticketDoc.id === uuid) {
-                  foundTicketData = ticketDoc.data() as TicketData;
-                  ticketRef = ticketDoc.ref;
-                  break;
+              for (const eventDoc of eventSnapshot.docs) {
+                console.log(`🎫 Checking event: ${eventDoc.id}`);
+                const ticketsRef = collection(db, collectionName, eventDoc.id, "tickets");
+                const ticketsSnapshot = await getDocs(ticketsRef);
+                console.log(`📋 Event ${eventDoc.id} has ${ticketsSnapshot.docs.length} tickets`);
+                
+                for (const ticketDoc of ticketsSnapshot.docs) {
+                  console.log(`🎟️ Checking ticket: ${ticketDoc.id}`);
+                  if (ticketDoc.id === uuid) {
+                    foundTicketData = ticketDoc.data() as TicketData;
+                    ticketRef = ticketDoc.ref;
+                    console.log("✅ Found ticket in new format:", foundTicketData);
+                    searchDetails.push(`New format: Found in ${collectionName}/${eventDoc.id}/tickets/${ticketDoc.id}`);
+                    break;
+                  }
                 }
+                if (foundTicketData) break;
               }
               if (foundTicketData) break;
+            } catch (collectionError) {
+              console.warn(`⚠️ Error accessing collection ${collectionName}:`, collectionError);
+              searchDetails.push(`Collection ${collectionName}: Error accessing`);
             }
-            if (foundTicketData) break;
           }
         }
 
         if (!foundTicketData) {
+          console.error("❌ Ticket not found anywhere. Search details:", searchDetails);
           setStatus("error");
-          setMessage("チケットが見つかりません。QRコードが正しいか確認してください。");
+          setMessage(`チケットが見つかりません。\n\n検索詳細:\n${searchDetails.join('\n')}\n\nUUID: ${uuid}`);
           return;
         }
 
-        if (foundTicketData.status === "済") {
+        // statusまたはstateフィールドをチェック（admin.tsxはstateを使用）
+        const currentStatus = foundTicketData.status || foundTicketData.state || "未";
+        console.log("📊 Current ticket status:", currentStatus);
+
+        if (currentStatus === "済") {
           setStatus("error");
           setMessage("このチケットは既に使用済みです。重複入場はできません。");
-          setTicketData(foundTicketData);
+          setTicketData({ ...foundTicketData, status: currentStatus });
           return;
         }
 
-        // ステータスを「済」に更新
-        await updateDoc(ticketRef, { status: "済" });
+        // ステータスを「済」に更新（admin.tsxがstateを使用している場合はそちらも更新）
+        const updateData: Record<string, string> = {};
+        if (foundTicketData.status !== undefined) {
+          updateData.status = "済";
+        }
+        if (foundTicketData.state !== undefined) {
+          updateData.state = "済";
+        }
+        // 両方設定されていない場合は、新しくstatusフィールドを作成
+        if (Object.keys(updateData).length === 0) {
+          updateData.status = "済";
+        }
+        
+        console.log("💾 Updating ticket with:", updateData);
+        await updateDoc(ticketRef, updateData);
         
         setTicketData({ ...foundTicketData, status: "済" });
         setStatus("success");
@@ -301,7 +342,7 @@ export default function Ticket() {
           <>
             <span className="status-icon">❌</span>
             <h1 className="status-title" style={{ color: '#f44336' }}>エラー</h1>
-            <p className="status-message">{message}</p>
+            <p className="status-message" style={{ whiteSpace: 'pre-line' }}>{message}</p>
             
             {ticketData && (
               <div className="ticket-info">
