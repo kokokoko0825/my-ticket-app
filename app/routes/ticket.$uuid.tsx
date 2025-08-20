@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, getDocs, DocumentData, CollectionReference, QuerySnapshot } from "firebase/firestore";
 import { db, auth } from "../root";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "@remix-run/react";
@@ -41,41 +41,59 @@ export default function Ticket() {
         const searchDetails: string[] = [];
 
         // 最初に新形式（イベントコレクション/イベントUUID/tickets/チケットUUID）を検索
-        console.log("🚀 Starting with new format search...");
-        const eventCollections = await discoverEventCollections();
-        console.log("🔍 Searching in event collections:", eventCollections);
+        console.log("🚀 Starting with comprehensive new format search...");
+        const allCollections = await discoverAllCollections();
+        console.log("🔍 Searching in all discovered collections:", allCollections);
         
-        for (const collectionName of eventCollections) {
+        for (const collectionName of allCollections) {
           console.log(`🔍 Checking collection: ${collectionName}`);
           try {
-            const eventSnapshot = await getDocs(collection(db, collectionName));
-            console.log(`📁 Collection ${collectionName} has ${eventSnapshot.docs.length} events`);
+            const collectionSnapshot = await getDocs(collection(db, collectionName));
+            console.log(`📁 Collection ${collectionName} has ${collectionSnapshot.docs.length} documents`);
             
-            for (const eventDoc of eventSnapshot.docs) {
-              console.log(`🎫 Checking event: ${eventDoc.id}`);
-              const ticketsRef = collection(db, collectionName, eventDoc.id, "tickets");
-              const ticketsSnapshot = await getDocs(ticketsRef);
+            // 直接チケットとして保存されている可能性もチェック
+            for (const docSnapshot of collectionSnapshot.docs) {
+              console.log(`📄 Checking document: ${docSnapshot.id} in collection ${collectionName}`);
               
-              // _metaドキュメントを除外してチケット数をカウント
-              const actualTickets = ticketsSnapshot.docs.filter(doc => doc.id !== '_meta');
-              console.log(`📋 Event ${eventDoc.id} has ${actualTickets.length} actual tickets (${ticketsSnapshot.docs.length} total docs)`);
-              
-              for (const ticketDoc of actualTickets) {
-                console.log(`🎟️ Checking ticket: ${ticketDoc.id}`);
-                if (ticketDoc.id === uuid) {
-                  foundTicketData = ticketDoc.data() as TicketData;
-                  ticketRef = ticketDoc.ref;
-                  console.log("✅ Found ticket in new format:", foundTicketData);
-                  searchDetails.push(`New format: Found in ${collectionName}/${eventDoc.id}/tickets/${ticketDoc.id}`);
-                  break;
-                }
+              // ドキュメントIDがUUIDと一致するかチェック
+              if (docSnapshot.id === uuid) {
+                foundTicketData = docSnapshot.data() as TicketData;
+                ticketRef = docSnapshot.ref;
+                console.log("✅ Found ticket as direct document:", foundTicketData);
+                searchDetails.push(`New format: Found as direct document in ${collectionName}/${docSnapshot.id}`);
+                break;
               }
-              if (foundTicketData) break;
+              
+              // サブコレクション 'tickets' の中もチェック
+              try {
+                const ticketsRef: CollectionReference<DocumentData> = collection(db, collectionName, docSnapshot.id, "tickets");
+                const ticketsSnapshot: QuerySnapshot<DocumentData> = await getDocs(ticketsRef);
+                
+                // _metaドキュメントを除外してチケット数をカウント
+                const actualTickets = ticketsSnapshot.docs.filter((doc: DocumentData) => doc.id !== '_meta');
+                console.log(`📋 Document ${docSnapshot.id} has ${actualTickets.length} actual tickets (${ticketsSnapshot.docs.length} total docs)`);
+                
+                for (const ticketDoc of actualTickets) {
+                  console.log(`🎟️ Checking ticket: ${ticketDoc.id} in ${collectionName}/${docSnapshot.id}/tickets`);
+                  if (ticketDoc.id === uuid) {
+                    foundTicketData = ticketDoc.data() as TicketData;
+                    ticketRef = ticketDoc.ref;
+                    console.log("✅ Found ticket in subcollection:", foundTicketData);
+                    searchDetails.push(`New format: Found in ${collectionName}/${docSnapshot.id}/tickets/${ticketDoc.id}`);
+                    break;
+                  }
+                }
+                if (foundTicketData) break;
+              } catch (_subCollectionError) {
+                // サブコレクションが存在しない場合は無視
+                console.log(`📋 No tickets subcollection in ${collectionName}/${docSnapshot.id}`);
+              }
             }
             if (foundTicketData) break;
-          } catch (collectionError) {
+          } catch (collectionError: unknown) {
+            const errorMessage = collectionError instanceof Error ? collectionError.message : 'Unknown error';
             console.warn(`⚠️ Error accessing collection ${collectionName}:`, collectionError);
-            searchDetails.push(`Collection ${collectionName}: Error accessing`);
+            searchDetails.push(`Collection ${collectionName}: Error accessing - ${errorMessage}`);
           }
         }
 
@@ -106,14 +124,29 @@ export default function Ticket() {
             `検索詳細:`,
             ...searchDetails,
             ``,
+            `検索したコレクション数: ${allCollections.length}`,
+            `見つかったコレクション: ${allCollections.join(', ') || 'なし'}`,
+            ``,
             `Routing Check:`,
             `- Current pathname: ${window.location.pathname}`,
             `- Expected pattern: /ticket/[uuid]`,
             `- UUID param: ${uuid || 'undefined'}`,
+            `- UUID format: ${uuid ? (uuid.length === 36 ? 'Valid UUID format' : 'Invalid UUID format') : 'No UUID'}`,
             ``,
             `Firebase 接続:`,
             `- Auth: ${auth.currentUser ? 'Logged in' : 'Not logged in'}`,
-            `- DB: ${db ? 'Connected' : 'Not connected'}`
+            `- User ID: ${auth.currentUser?.uid || 'Not available'}`,
+            `- User Email: ${auth.currentUser?.email || 'Not available'}`,
+            `- DB: ${db ? 'Connected' : 'Not connected'}`,
+            ``,
+            `LocalStorage情報:`,
+            `- customCollections: ${localStorage.getItem('customCollections') || 'Empty'}`,
+            ``,
+            `推奨対策:`,
+            `1. admin.tsx画面でチケットが正しく作成されているか確認`,
+            `2. owner.tsx画面でイベントが存在するか確認`,  
+            `3. 作成したイベント名とコレクション名が一致しているか確認`,
+            `4. このUUID ${uuid} でチケットを再作成してみる`
           ];
           
           console.error("❌ Ticket not found anywhere. Debug info:", debugDetails);
@@ -176,9 +209,9 @@ export default function Ticket() {
     }
   }, [status, countdown, navigate]);
 
-  // Firestoreから動的にコレクション名を検出する関数
-  const discoverEventCollections = async (): Promise<string[]> => {
-    const eventCollections: string[] = [];
+  // より包括的なコレクション検索を行う関数
+  const discoverAllCollections = async (): Promise<string[]> => {
+    const discoveredCollections: string[] = [];
     const baseCollections = ["tickets", "users", "events", "products", "test"];
     
     try {
@@ -186,29 +219,62 @@ export default function Ticket() {
       const savedCollections = JSON.parse(localStorage.getItem('customCollections') || '[]');
       console.log("📂 Saved collections from localStorage:", savedCollections);
       
-      // 最近のイベント名パターンを推測して試行
-      const commonEventPatterns = [
+      // 拡張されたイベント名パターンリスト
+      const eventPatterns = [
         ...savedCollections,
-        // よくあるイベント名パターンを追加
-        "testEvent", "テストイベント", "ライブ", "コンサート", "演奏会", "発表会"
+        // 基本的なパターン
+        "testEvent", "テストイベント", "ライブ", "コンサート", "演奏会", "発表会",
+        // 英語パターン
+        "live", "concert", "event", "show", "performance", "gig",
+        // 日本語パターン
+        "イベント", "ショー", "パフォーマンス", "音楽会", "ミニライブ",
+        // 特殊文字除去されたパターン
+        "testlive", "テストライブ", "newlive", "ニューライブ", "firstlive", "ファーストライブ",
+        // 数字付きパターン
+        "live1", "live2", "live3", "event1", "event2", "event3",
+        // よくある組み合わせ
+        "grasslive", "forestlive", "springlive", "summerlive", "autumnlive", "winterlive",
+        // 草通り越して林関連
+        "草", "林", "tree", "forest", "grass", "nature"
       ];
       
-      for (const collectionName of commonEventPatterns) {
+      // 各パターンを試行
+      for (const collectionName of eventPatterns) {
         if (!baseCollections.includes(collectionName) && collectionName.trim()) {
           try {
             const snapshot = await getDocs(collection(db, collectionName));
             if (!snapshot.empty) {
-              console.log(`✅ Found event collection: ${collectionName} (${snapshot.docs.length} events)`);
-              eventCollections.push(collectionName);
+              console.log(`✅ Found collection: ${collectionName} (${snapshot.docs.length} documents)`);
+              discoveredCollections.push(collectionName);
             }
-          } catch (error) {
-            console.log(`❌ Collection ${collectionName} does not exist:`, error);
+          } catch (_error) {
+            // 存在しないコレクションは無視
           }
         }
       }
       
-      console.log("🔍 Discovered event collections:", eventCollections);
-      return eventCollections;
+      // さらに包括的な検索: 一般的なFirestoreコレクション名パターン
+      const additionalPatterns = [
+        // admin.tsxで作成される可能性のあるパターン
+        "Admin", "admin", "ADMIN", "Management", "management",
+        // Remixアプリで一般的なパターン
+        "collections", "data", "items", "records", "documents"
+      ];
+      
+      for (const pattern of additionalPatterns) {
+        try {
+          const snapshot = await getDocs(collection(db, pattern));
+          if (!snapshot.empty && !discoveredCollections.includes(pattern)) {
+            console.log(`✅ Found additional collection: ${pattern} (${snapshot.docs.length} documents)`);
+            discoveredCollections.push(pattern);
+          }
+        } catch (_error) {
+          // 存在しないコレクションは無視
+        }
+      }
+      
+      console.log("🔍 All discovered collections:", discoveredCollections);
+      return discoveredCollections;
     } catch (error) {
       console.error("Error discovering collections:", error);
       return [];
