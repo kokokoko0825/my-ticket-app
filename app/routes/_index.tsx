@@ -1,62 +1,18 @@
 import { useState } from "react";
-import { doc, setDoc, query, where, getDocs, collection } from "firebase/firestore";
-import { QRCodeCanvas } from "qrcode.react";
 import { useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
-import { db, auth } from "../root";
 
 export const meta: MetaFunction = () => {
   return [
     { charSet: "utf-8"},
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "チケット管理システム" },
+    { name: "description", content: "イベントチケット管理システム" },
   ];
 };
 
 export default function Index() {
-  const [name, setName] = useState(""); // 名前入力フィールドの状態
-  const [qrCode, setQrCode] = useState(""); // 生成されたQRコードのURL
   const [eventTitle, setEventTitle] = useState(""); // イベントタイトル入力フィールドの状態
   const navigate = useNavigate();
-
-  const generateTicket = async () => {
-    if (!name.trim()) { // 空白のみの名前入力を防ぐ
-      alert("名前を入力してください。");
-      return;
-    }
-
-    if (!auth.currentUser) { 
-    alert("ログインしてください。");
-    return;
-    }
-
-    try {
-      const q = query(collection(db, "tickets"), where("name", "==", name), where("createdBy", "==", auth.currentUser.uid));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) { 
-        alert("同じ名前のチケットが既に発行されています。");
-        return;
-      }
-
-      const newUuid = crypto.randomUUID(); // UUIDの生成
-
-      // Firestoreにデータを保存
-      await setDoc(doc(db, "tickets", newUuid), {
-        name: name,
-        id: newUuid,
-        status: "未",
-        createdBy: auth.currentUser.uid,
-      });
-
-      // QRコードの生成
-      setQrCode(window.location.origin + "/ticket/" + newUuid);
-      //setName(""); // 入力フィールドをクリア
-    } catch (error) {
-      console.error("Error creating ticket:", error);
-      alert("チケットの発行に失敗しました。"); // エラーメッセージを表示
-    }
-  };
 
   const navigateToAdmin = () => {
     if (!eventTitle.trim()) {
@@ -65,6 +21,10 @@ export default function Index() {
     }
     // イベントタイトルをURLパラメータとして渡してadminページに遷移
     navigate(`/admin?title=${encodeURIComponent(eventTitle)}`);
+  };
+
+  const navigateToOwner = () => {
+    navigate("/owner");
   };
 
   return (
@@ -173,19 +133,56 @@ export default function Index() {
       `}</style>
 
       <div className="main-container">
-        <h1 className="main-title">チケット管理システム</h1>
+        <h1 className="main-title">🎫 チケット管理システム</h1>
         
-        {/* イベント管理セクション */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #1976d2, #1565c0)', 
+          color: 'white', 
+          padding: '24px', 
+          borderRadius: '12px', 
+          textAlign: 'center', 
+          marginBottom: '32px' 
+        }}>
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>✨ 新形式チケットシステム</h2>
+          <p style={{ margin: 0, opacity: 0.9 }}>
+            イベント作成からチケット発行まで、すべて統合管理
+          </p>
+        </div>
+        
+        {/* イベント管理者向けセクション */}
         <div className="section-card">
-          <div className="section-header secondary">
-            <h2 className="section-title">🎪 イベント管理</h2>
+          <div className="section-header">
+            <h2 className="section-title">👑 イベント管理者</h2>
           </div>
           <div className="section-content">
+            <p style={{ marginBottom: '20px', color: '#666', lineHeight: '1.6' }}>
+              イベントの作成・編集・全体管理を行います
+            </p>
+            <button 
+              className="primary-btn"
+              onClick={navigateToOwner}
+            >
+              イベント管理画面
+            </button>
+          </div>
+        </div>
+
+        <hr className="divider" />
+        
+        {/* チケット発行担当者向けセクション */}
+        <div className="section-card">
+          <div className="section-header secondary">
+            <h2 className="section-title">🎫 チケット発行担当</h2>
+          </div>
+          <div className="section-content">
+            <p style={{ marginBottom: '20px', color: '#666', lineHeight: '1.6' }}>
+              特定のイベントでチケットを発行・管理します
+            </p>
             <div className="form-group">
               <input
                 type="text"
                 className="form-input"
-                placeholder="イベント名を入力してください"
+                placeholder="担当するイベント名を入力してください"
                 value={eventTitle}
                 onChange={(e) => setEventTitle(e.target.value)}
               />
@@ -194,114 +191,22 @@ export default function Index() {
               className="secondary-btn"
               onClick={navigateToAdmin}
             >
-              管理画面へ移動
+              チケット発行画面
             </button>
           </div>
         </div>
 
-        <hr className="divider" />
-        
-        {/* チケット発行セクション */}
+        {/* 説明セクション */}
         <div className="section-card">
-          <div className="section-header">
-            <h2 className="section-title">🎫 個人チケット発行</h2>
-          </div>
           <div className="section-content">
-            <div className="form-group">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="フルネーム（漢字）を入力してください"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <button 
-              className="primary-btn"
-              onClick={generateTicket}
-            >
-              チケット発行
-            </button>
-            <div className="form-note">
-              *名前は必ずフルネーム漢字で入力して下さい。
+            <h3 style={{ color: '#333', marginBottom: '16px' }}>📋 システムの使い方</h3>
+            <div style={{ color: '#666', lineHeight: '1.8' }}>
+              <p><strong>1. イベント管理者:</strong> 新しいイベントを作成し、基本情報を設定</p>
+              <p><strong>2. チケット発行担当:</strong> 来場者にチケットを発行・QRコード生成</p>
+              <p><strong>3. 入場時:</strong> QRコードをスキャンして入場処理を完了</p>
             </div>
           </div>
         </div>
-      
-        {/* QRコードの表示 */}
-        {qrCode && (
-          <div className="section-card">
-            <div className="section-header">
-              <h2 className="section-title">📱 生成されたチケット</h2>
-            </div>
-            <div className="section-content">
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <strong>下記の画像をスクリーンショットしてください。</strong>
-              </div>
-              
-              <div style={{ 
-                backgroundColor: '#2c2c2c', 
-                color: 'white', 
-                padding: '20px', 
-                borderRadius: '8px',
-                marginBottom: '16px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-              }}>
-                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  {name}さん用入場チケット
-                </div>
-                <div style={{ 
-                  fontSize: '28px', 
-                  fontWeight: '600',
-                  textAlign: 'center', 
-                  margin: '16px 0',
-                  fontFamily: 'Irish Grover, cursive' 
-                }}>
-                  title
-                </div>
-                <div style={{ fontSize: '14px', textAlign: 'right', marginBottom: '16px' }}>
-                  in place
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>Date: 3/8 ,3/9</div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>Open:</div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>/ Day1, 14:30 ~ /</div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>/ Day2, 15:30 ~ /</div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>Price: 1000円 + 1dr</div>
-                  </div>
-                  <QRCodeCanvas value={qrCode} size={75} level="H" />
-                </div>
-              </div>
-              
-              <div style={{ 
-                backgroundColor: '#2c2c2c', 
-                color: 'white', 
-                padding: '20px', 
-                borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-              }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '12px', fontSize: '14px' }}>
-                  *注意事項*
-                </div>
-                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  ・当日はドリンク代として500円を持ってきてください。
-                </div>
-                <div style={{ fontSize: '14px', marginBottom: '16px' }}>
-                  ・ライブハウスには駐車場がないので電車、バスの利用をお願いします。
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                    会場の場所はこちら↓
-                  </div>
-                  <div style={{ fontSize: '14px' }}>
-                    〒510-0256 三重県鈴鹿市磯山1-9-8
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

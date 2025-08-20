@@ -34,54 +34,64 @@ export default function Ticket() {
       try {
         console.log("🔍 Searching for ticket UUID:", uuid);
         
-        // まず旧形式（直接ticketsコレクション）をチェック
         let ticketRef = doc(db, "tickets", uuid);
-        const ticketSnap = await getDoc(ticketRef);
         let foundTicketData: TicketData | null = null;
         const searchDetails: string[] = [];
 
-        if (ticketSnap.exists()) {
-          foundTicketData = ticketSnap.data() as TicketData;
-          console.log("✅ Found ticket in legacy format (tickets collection):", foundTicketData);
-          searchDetails.push("Legacy format: Found");
-        } else {
-          console.log("❌ Ticket not found in legacy format (tickets collection)");
-          searchDetails.push("Legacy format: Not found");
-          
-          // 新形式（イベントコレクション/イベントUUID/tickets/チケットUUID）を検索
-          const collections = await getKnownCollections();
-          console.log("🔍 Searching in collections:", collections);
-          
-          for (const collectionName of collections) {
-            console.log(`🔍 Checking collection: ${collectionName}`);
-            try {
-              const eventSnapshot = await getDocs(collection(db, collectionName));
-              console.log(`📁 Collection ${collectionName} has ${eventSnapshot.docs.length} events`);
+        // 最初に新形式（イベントコレクション/イベントUUID/tickets/チケットUUID）を検索
+        console.log("🚀 Starting with new format search...");
+        const eventCollections = await discoverEventCollections();
+        console.log("🔍 Searching in event collections:", eventCollections);
+        
+        for (const collectionName of eventCollections) {
+          console.log(`🔍 Checking collection: ${collectionName}`);
+          try {
+            const eventSnapshot = await getDocs(collection(db, collectionName));
+            console.log(`📁 Collection ${collectionName} has ${eventSnapshot.docs.length} events`);
+            
+            for (const eventDoc of eventSnapshot.docs) {
+              console.log(`🎫 Checking event: ${eventDoc.id}`);
+              const ticketsRef = collection(db, collectionName, eventDoc.id, "tickets");
+              const ticketsSnapshot = await getDocs(ticketsRef);
               
-              for (const eventDoc of eventSnapshot.docs) {
-                console.log(`🎫 Checking event: ${eventDoc.id}`);
-                const ticketsRef = collection(db, collectionName, eventDoc.id, "tickets");
-                const ticketsSnapshot = await getDocs(ticketsRef);
-                console.log(`📋 Event ${eventDoc.id} has ${ticketsSnapshot.docs.length} tickets`);
-                
-                for (const ticketDoc of ticketsSnapshot.docs) {
-                  console.log(`🎟️ Checking ticket: ${ticketDoc.id}`);
-                  if (ticketDoc.id === uuid) {
-                    foundTicketData = ticketDoc.data() as TicketData;
-                    ticketRef = ticketDoc.ref;
-                    console.log("✅ Found ticket in new format:", foundTicketData);
-                    searchDetails.push(`New format: Found in ${collectionName}/${eventDoc.id}/tickets/${ticketDoc.id}`);
-                    break;
-                  }
+              // _metaドキュメントを除外してチケット数をカウント
+              const actualTickets = ticketsSnapshot.docs.filter(doc => doc.id !== '_meta');
+              console.log(`📋 Event ${eventDoc.id} has ${actualTickets.length} actual tickets (${ticketsSnapshot.docs.length} total docs)`);
+              
+              for (const ticketDoc of actualTickets) {
+                console.log(`🎟️ Checking ticket: ${ticketDoc.id}`);
+                if (ticketDoc.id === uuid) {
+                  foundTicketData = ticketDoc.data() as TicketData;
+                  ticketRef = ticketDoc.ref;
+                  console.log("✅ Found ticket in new format:", foundTicketData);
+                  searchDetails.push(`New format: Found in ${collectionName}/${eventDoc.id}/tickets/${ticketDoc.id}`);
+                  break;
                 }
-                if (foundTicketData) break;
               }
               if (foundTicketData) break;
-            } catch (collectionError) {
-              console.warn(`⚠️ Error accessing collection ${collectionName}:`, collectionError);
-              searchDetails.push(`Collection ${collectionName}: Error accessing`);
             }
+            if (foundTicketData) break;
+          } catch (collectionError) {
+            console.warn(`⚠️ Error accessing collection ${collectionName}:`, collectionError);
+            searchDetails.push(`Collection ${collectionName}: Error accessing`);
           }
+        }
+
+        // 新形式で見つからない場合のみ旧形式をチェック
+        if (!foundTicketData) {
+          console.log("🔄 New format search failed, trying legacy format...");
+          const ticketSnap = await getDoc(ticketRef);
+          
+          if (ticketSnap.exists()) {
+            foundTicketData = ticketSnap.data() as TicketData;
+            console.log("✅ Found ticket in legacy format (tickets collection):", foundTicketData);
+            searchDetails.push("Legacy format: Found");
+          } else {
+            console.log("❌ Ticket not found in legacy format (tickets collection)");
+            searchDetails.push("Legacy format: Not found");
+          }
+        } else {
+          searchDetails.push("Legacy format: Skipped (found in new format)");
         }
 
         if (!foundTicketData) {
@@ -144,13 +154,43 @@ export default function Ticket() {
     }
   }, [status, countdown, navigate]);
 
-  // 既知のコレクション名を取得する関数
-  const getKnownCollections = async (): Promise<string[]> => {
-    const baseCollections = ["tickets", "users", "events", "products"];
-    const savedCollections = JSON.parse(localStorage.getItem('customCollections') || '[]');
-    return [...baseCollections, ...savedCollections].filter(name => 
-      !["tickets", "users", "events", "products"].includes(name)
-    );
+  // Firestoreから動的にコレクション名を検出する関数
+  const discoverEventCollections = async (): Promise<string[]> => {
+    const eventCollections: string[] = [];
+    const baseCollections = ["tickets", "users", "events", "products", "test"];
+    
+    try {
+      // LocalStorageから既知のコレクションを取得
+      const savedCollections = JSON.parse(localStorage.getItem('customCollections') || '[]');
+      console.log("📂 Saved collections from localStorage:", savedCollections);
+      
+      // 最近のイベント名パターンを推測して試行
+      const commonEventPatterns = [
+        ...savedCollections,
+        // よくあるイベント名パターンを追加
+        "testEvent", "テストイベント", "ライブ", "コンサート", "演奏会", "発表会"
+      ];
+      
+      for (const collectionName of commonEventPatterns) {
+        if (!baseCollections.includes(collectionName) && collectionName.trim()) {
+          try {
+            const snapshot = await getDocs(collection(db, collectionName));
+            if (!snapshot.empty) {
+              console.log(`✅ Found event collection: ${collectionName} (${snapshot.docs.length} events)`);
+              eventCollections.push(collectionName);
+            }
+          } catch (error) {
+            console.log(`❌ Collection ${collectionName} does not exist:`, error);
+          }
+        }
+      }
+      
+      console.log("🔍 Discovered event collections:", eventCollections);
+      return eventCollections;
+    } catch (error) {
+      console.error("Error discovering collections:", error);
+      return [];
+    }
   };
 
   const handleReturnHome = () => {
