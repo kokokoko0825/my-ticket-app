@@ -1,5 +1,5 @@
 import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "../root";
+import { db, auth } from "../root";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "@remix-run/react";
 
@@ -22,6 +22,8 @@ export default function Ticket() {
   const [message, setMessage] = useState<string>("");
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [countdown, setCountdown] = useState(5);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
 
   useEffect(() => {
     const fetchAndUpdateTicket = async () => {
@@ -95,9 +97,29 @@ export default function Ticket() {
         }
 
         if (!foundTicketData) {
-          console.error("❌ Ticket not found anywhere. Search details:", searchDetails);
+          const debugDetails = [
+            `UUID: ${uuid}`,
+            `Current URL: ${window.location.href}`,
+            `User Agent: ${navigator.userAgent}`,
+            `Timestamp: ${new Date().toLocaleString('ja-JP')}`,
+            ``,
+            `検索詳細:`,
+            ...searchDetails,
+            ``,
+            `Routing Check:`,
+            `- Current pathname: ${window.location.pathname}`,
+            `- Expected pattern: /ticket/[uuid]`,
+            `- UUID param: ${uuid || 'undefined'}`,
+            ``,
+            `Firebase 接続:`,
+            `- Auth: ${auth.currentUser ? 'Logged in' : 'Not logged in'}`,
+            `- DB: ${db ? 'Connected' : 'Not connected'}`
+          ];
+          
+          console.error("❌ Ticket not found anywhere. Debug info:", debugDetails);
+          setDebugInfo(debugDetails);
           setStatus("error");
-          setMessage(`チケットが見つかりません。\n\n検索詳細:\n${searchDetails.join('\n')}\n\nUUID: ${uuid}`);
+          setMessage("チケットが見つかりません。\n\n「デバッグ情報を表示」をタップして詳細を確認してください。");
           return;
         }
 
@@ -295,6 +317,44 @@ export default function Ticket() {
           color: #666;
           margin-top: 16px;
         }
+        .debug-toggle-btn {
+          background: #ff9800;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          margin: 16px 0;
+          transition: all 0.2s;
+        }
+        .debug-toggle-btn:hover {
+          background: #f57c00;
+        }
+        .debug-info-panel {
+          background: #f8f9fa;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          margin-top: 16px;
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+          line-height: 1.4;
+          max-height: 300px;
+          overflow-y: auto;
+          white-space: pre-line;
+          text-align: left;
+        }
+        .copy-debug-btn {
+          background: #666;
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+          margin-top: 8px;
+        }
         .loading-spinner {
           width: 40px;
           height: 40px;
@@ -384,6 +444,36 @@ export default function Ticket() {
             <h1 className="status-title" style={{ color: '#f44336' }}>エラー</h1>
             <p className="status-message" style={{ whiteSpace: 'pre-line' }}>{message}</p>
             
+            {/* デバッグ情報表示 */}
+            {debugInfo.length > 0 && (
+              <>
+                <button 
+                  className="debug-toggle-btn"
+                  onClick={() => setShowDebugInfo(!showDebugInfo)}
+                >
+                  {showDebugInfo ? '📋 デバッグ情報を隠す' : '🔍 デバッグ情報を表示'}
+                </button>
+                
+                {showDebugInfo && (
+                  <div className="debug-info-panel">
+                    {debugInfo.join('\n')}
+                    <button 
+                      className="copy-debug-btn"
+                      onClick={() => {
+                        navigator.clipboard.writeText(debugInfo.join('\n')).then(() => {
+                          alert('デバッグ情報をクリップボードにコピーしました');
+                        }).catch(() => {
+                          alert('コピーに失敗しました');
+                        });
+                      }}
+                    >
+                      📋 コピー
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+            
             {ticketData && (
               <div className="ticket-info">
                 <div className="ticket-info-row">
@@ -399,10 +489,10 @@ export default function Ticket() {
                 <div className="ticket-info-row">
                   <span className="ticket-info-label">現在のステータス:</span>
                   <span className="ticket-info-value" style={{ 
-                    color: ticketData.status === "済" ? '#f44336' : '#ff9800', 
+                    color: (ticketData.status || ticketData.state) === "済" ? '#f44336' : '#ff9800', 
                     fontWeight: '600' 
                   }}>
-                    {ticketData.status === "済" ? "使用済み" : "未使用"}
+                    {(ticketData.status || ticketData.state) === "済" ? "使用済み" : "未使用"}
                   </span>
                 </div>
               </div>
