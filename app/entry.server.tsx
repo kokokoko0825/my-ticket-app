@@ -20,7 +20,7 @@ export default async function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext,
 ) {
-  const body = await renderToReadableStream(
+  const html = await renderToReadableStream(
     <RemixServer context={remixContext} url={request.url} />,
     {
       signal: request.signal,
@@ -33,11 +33,11 @@ export default async function handleRequest(
   );
 
   if (isbot(request.headers.get("user-agent") || "")) {
-    await body.allReady;
+    await html.allReady;
   }
 
   responseHeaders.set("Content-Type", "text/html");
-  return new Response(body, {
+  return new Response(html, {
     headers: responseHeaders,
     status: responseStatusCode,
   });

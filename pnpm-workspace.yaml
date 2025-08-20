@@ -1,0 +1,5 @@
+ignoredBuiltDependencies:
+  - esbuild
+  - protobufjs
+  - re2
+  - workerd

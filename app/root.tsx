@@ -6,7 +6,7 @@ import {
 } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction, LinksFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -15,10 +15,16 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
-import "./tailwind.css";
+
 import firebase from "firebase/compat/app";
-import * as styles from "./styles.css";
+import Button from "@mui/material/Button";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+// Material UIのスタイルはentry.client.tsxとentry.server.tsxで管理
+
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCNs9z34dPvegE073RHwmZw3CLYmJ-NsC8",
@@ -40,6 +46,49 @@ if (!getApps().length) {
 export const db = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
 
+// MUIテーマの作成
+export const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+          margin: 0,
+          padding: 0,
+          backgroundColor: '#f5f5f5', // デバッグ用：Material UIが適用されているかわかりやすくする
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: '8px', // デバッグ用：Material UIボタンスタイルが適用されているか確認
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1976d2', // 明示的にAppBarの色を設定
+        },
+      },
+    },
+  },
+});
+
 export const meta: MetaFunction = () => {
   return[
     { charset: "utf-8" },
@@ -57,7 +106,11 @@ export const links: LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/icon?family=Material+Icons",
   },
 ];
 
@@ -93,23 +146,62 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <div className={styles.container}>
-          {user ? (
-            <div>
-              <p className={styles.title}>Welcome {user.displayName}!</p>
-              <button className={styles.button} onClick={signOutUser}>ログアウト</button>
-              <Outlet />
-            </div>
-          ) : (
-              <div>
-                <p>ログインしてね</p>
-                <button className={styles.button} onClick={signInWithGoogle}>ログイン</button>
-              </div>
-          )}
-          <ScrollRestoration />
-          <Scripts />
-          <LiveReload />
-        </div>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+            {user ? (
+              <>
+                <Box sx={{ 
+                  backgroundColor: 'primary.main', 
+                  color: 'primary.contrastText', 
+                  py: 2,
+                  mb: 2
+                }}>
+                  <Container>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="h6">
+                        Welcome {user.displayName}!
+                      </Typography>
+                      <Button 
+                        color="inherit" 
+                        variant="outlined" 
+                        onClick={signOutUser}
+                        sx={{ borderColor: 'white', color: 'white' }}
+                      >
+                        ログアウト
+                      </Button>
+                    </Box>
+                  </Container>
+                </Box>
+                <Outlet />
+              </>
+            ) : (
+              <Container maxWidth="sm" sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                minHeight: '100vh',
+                textAlign: 'center'
+              }}>
+                <Typography variant="h4" gutterBottom>
+                  草通り越して林!
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  ログインしてね
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  onClick={signInWithGoogle}
+                  size="large"
+                >
+                  ログイン
+                </Button>
+              </Container>
+            )}
+            <ScrollRestoration />
+            <Scripts />
+            <LiveReload />
+        </ThemeProvider>
       </body>
     </html>
   );
