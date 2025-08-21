@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
-import { db } from "../root";
+// import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+// import { db } from "../root";
 
 export const meta: MetaFunction = () => {
   return [
@@ -13,28 +13,16 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-interface TicketData {
-  uuid: string;
-  name: string;
-  bandName: string;
-  createdBy: string;
-  status: "未" | "済";
-  state?: "未" | "済"; // 既存データとの互換性
-  createdAt: unknown;
-}
-
-interface EntranceResult {
+interface RedirectResult {
   success: boolean;
-  ticketData?: TicketData;
   message: string;
-  alreadyUsed?: boolean;
 }
 
 export default function QRReader() {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null);
-  const [entranceResult, setEntranceResult] = useState<EntranceResult | null>(null);
+  const [redirectResult, setRedirectResult] = useState<RedirectResult | null>(null);
   const [processing, setProcessing] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
@@ -118,8 +106,8 @@ export default function QRReader() {
 
 
 
-  // チケット入場処理を実行
-  const processTicketEntrance = async (ticketUrl: string): Promise<EntranceResult> => {
+  // QRコードからチケットページのパスを抽出して遷移する
+  const redirectToTicketPage = (ticketUrl: string): boolean => {
     try {
       const url = new URL(ticketUrl);
       const pathname = url.pathname;
@@ -128,75 +116,24 @@ export default function QRReader() {
       const pathParts = pathname.split('/').filter(Boolean);
       
       if (pathParts[0] !== 'ticket') {
-        return { success: false, message: "無効なチケットQRコードです。" };
+        console.log("❌ チケットURL以外のQRコードです");
+        return false;
       }
 
-      let ticketDocRef;
-      let searchDescription = "";
+      console.log(`🔍 チケットURL検出: ${pathname}`);
 
-      if (pathParts.length === 4) {
-        // 新形式: /ticket/eventCollectionName/eventUuid/ticketUuid
-        const [, eventCollectionName, eventUuid, ticketUuid] = pathParts;
-        ticketDocRef = doc(db, eventCollectionName, eventUuid, "tickets", ticketUuid);
-        searchDescription = `新形式 (${eventCollectionName}/${eventUuid}/${ticketUuid})`;
-      } else if (pathParts.length === 2) {
-        // 旧形式: /ticket/uuid
-        const [, ticketUuid] = pathParts;
-        ticketDocRef = doc(db, "tickets", ticketUuid);
-        searchDescription = `旧形式 (${ticketUuid})`;
-      } else {
-        return { success: false, message: "無効なチケットURL形式です。" };
-      }
-
-      console.log(`🔍 チケット検索開始: ${searchDescription}`);
-
-      // チケットデータを取得
-      const ticketSnapshot = await getDoc(ticketDocRef);
-      
-      if (!ticketSnapshot.exists()) {
-        console.log("❌ チケットが見つかりません");
-        return { success: false, message: "チケットが見つかりません。QRコードが正しいか確認してください。" };
-      }
-
-      const ticketData = ticketSnapshot.data() as TicketData;
-      console.log("✅ チケット発見:", ticketData);
-
-      // チケットの使用状況をチェック
-      const currentStatus = ticketData.status || ticketData.state || "未";
-      
-      if (currentStatus === "済") {
-        console.log("⚠️ チケットは既に使用済み");
-        return { 
-          success: false, 
-          message: "このチケットは既に使用済みです。", 
-          ticketData,
-          alreadyUsed: true 
-        };
-      }
-
-      // チケットのステータスを「済」に更新
-      console.log("🎫 チケット状態を更新中...");
-      await setDoc(ticketDocRef, {
-        status: "済",
-        state: null, // 旧フィールドを削除
-        processedAt: Timestamp.now() // 処理時刻を記録
-      }, { merge: true });
-
-      console.log("✅ 入場処理完了");
-      return { 
-        success: true, 
-        message: `${ticketData.name}さん、入場処理が完了しました！`, 
-        ticketData 
-      };
+      // パスをそのまま使ってリダイレクト
+      navigate(pathname);
+      return true;
 
     } catch (error) {
-      console.error("入場処理エラー:", error);
-      return { success: false, message: "入場処理中にエラーが発生しました。再度お試しください。" };
+      console.error("URL解析エラー:", error);
+      return false;
     }
   };
 
   // スキャン結果を処理する関数
-  const handleScanResult = async (data: string) => {
+  const handleScanResult = (data: string) => {
     setIsScanning(false);
     setProcessing(true);
     stopScanner();
@@ -204,63 +141,55 @@ export default function QRReader() {
     console.log("📱 QRコード読み取り完了:", data);
 
     try {
-      // チケットURLの場合のみ処理
+      // チケットURLの場合はリダイレクト
       if (data.startsWith('http') && data.includes('/ticket/')) {
-        const result = await processTicketEntrance(data);
-        setEntranceResult(result);
+        const success = redirectToTicketPage(data);
         
-        if (result.success) {
-          // 成功時は5秒後にホームページに遷移（カウントダウン付き）
-          setCountdown(5);
-          const countdownInterval = setInterval(() => {
-            setCountdown(prev => {
-              if (prev === null || prev <= 1) {
-                clearInterval(countdownInterval);
-                navigate('/');
-                return null;
-              }
-              return prev - 1;
-            });
-          }, 1000);
+        if (success) {
+          console.log("✅ チケットページに遷移中...");
+          // リダイレクトが成功した場合、処理完了メッセージを表示して即座に遷移
+          setRedirectResult({ 
+            success: true, 
+            message: "チケットページに移動します..." 
+          });
+          return; // 即座に遷移するため、以降の処理は不要
         } else {
-          // 失敗時も5秒後にホームページに遷移（カウントダウン付き）
-          setCountdown(5);
-          const countdownInterval = setInterval(() => {
-            setCountdown(prev => {
-              if (prev === null || prev <= 1) {
-                clearInterval(countdownInterval);
-                navigate('/');
-                return null;
-              }
-              return prev - 1;
-            });
-          }, 1000);
+          // リダイレクトに失敗した場合
+          setRedirectResult({ 
+            success: false, 
+            message: "無効なチケットQRコードです。正しいチケットをスキャンしてください。" 
+          });
         }
       } else {
         // チケットURL以外の場合
-        setEntranceResult({ 
+        setRedirectResult({ 
           success: false, 
           message: "これはチケットのQRコードではありません。正しいチケットをスキャンしてください。" 
         });
-        setCountdown(5);
-        const countdownInterval = setInterval(() => {
-          setCountdown(prev => {
-            if (prev === null || prev <= 1) {
-              clearInterval(countdownInterval);
-              navigate('/');
-              return null;
-            }
-            return prev - 1;
-          });
-        }, 1000);
       }
+
+      // エラーの場合は3秒後にホームページに遷移
+      setCountdown(3);
+      const countdownInterval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownInterval);
+            navigate('/');
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
     } catch (error) {
       console.error("QRコード処理エラー:", error);
-      setEntranceResult({ 
+      setRedirectResult({ 
         success: false, 
         message: "QRコードの処理中にエラーが発生しました。" 
       });
-      setCountdown(5);
+      
+      // エラーの場合は3秒後にホームページに遷移
+      setCountdown(3);
       const countdownInterval = setInterval(() => {
         setCountdown(prev => {
           if (prev === null || prev <= 1) {
@@ -482,7 +411,7 @@ export default function QRReader() {
           >
             ← 戻る
           </button>
-          <h1 className="qr-title">🎫 チケット入場処理</h1>
+          <h1 className="qr-title">🎫 QRコードリーダー</h1>
           <div></div>
         </div>
       </div>
@@ -513,23 +442,23 @@ export default function QRReader() {
         )}
 
         {/* スキャン中インジケーター */}
-        {isScanning && !error && !processing && !entranceResult && (
+        {isScanning && !error && !processing && !redirectResult && (
           <div className="scanning-indicator">
             📸 チケットをスキャン中... QRコードをカメラに向けてください
           </div>
         )}
 
         {/* 初期化中インジケーター */}
-        {!isScanning && !error && !processing && !entranceResult && (
+        {!isScanning && !error && !processing && !redirectResult && (
           <div className="scanning-indicator">
-            🔄 入場処理システムを初期化中...
+            🔄 QRコードリーダーを初期化中...
           </div>
         )}
 
         {/* 処理中インジケーター */}
         {processing && (
           <div className="scanning-indicator" style={{ background: '#fff3cd', color: '#856404' }}>
-            ⏳ チケットを処理中... しばらくお待ちください
+            ⏳ QRコードを処理中... しばらくお待ちください
           </div>
         )}
 
@@ -552,12 +481,12 @@ export default function QRReader() {
           )}
         </div>
 
-        {/* 入場処理結果オーバーレイ */}
-        {entranceResult && (
+        {/* リダイレクト結果オーバーレイ */}
+        {redirectResult && (
           <div className="overlay">
             <div className="overlay-content">
               <div className="overlay-header">
-                {entranceResult.success ? (
+                {redirectResult.success ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ 
                       fontSize: '48px',
@@ -577,10 +506,10 @@ export default function QRReader() {
                         fontSize: '28px',
                         fontWeight: 'bold'
                       }}>
-                        入場処理完了
+                        リダイレクト成功
                       </h2>
                       <p style={{ margin: '4px 0 0 0', fontSize: '16px', opacity: 0.8, color: '#4caf50' }}>
-                        Welcome! ご入場ください
+                        チケットページに移動中...
                       </p>
                     </div>
                   </div>
@@ -588,33 +517,31 @@ export default function QRReader() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ 
                       fontSize: '48px',
-                      background: entranceResult.alreadyUsed 
-                        ? 'linear-gradient(135deg, #ff9800, #f57c00)'
-                        : 'linear-gradient(135deg, #f44336, #d32f2f)',
+                      background: 'linear-gradient(135deg, #f44336, #d32f2f)',
                       borderRadius: '50%',
                       padding: '16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      {entranceResult.alreadyUsed ? '⚠️' : '❌'}
+                      ❌
                     </div>
                     <div>
                       <h2 style={{ 
                         margin: 0, 
-                        color: entranceResult.alreadyUsed ? '#f57c00' : '#d32f2f',
+                        color: '#d32f2f',
                         fontSize: '28px',
                         fontWeight: 'bold'
                       }}>
-                        {entranceResult.alreadyUsed ? '使用済みチケット' : '入場処理失敗'}
+                        QRコード読み取りエラー
                       </h2>
                       <p style={{ 
                         margin: '4px 0 0 0', 
                         fontSize: '16px', 
                         opacity: 0.8,
-                        color: entranceResult.alreadyUsed ? '#ff9800' : '#f44336'
+                        color: '#f44336'
                       }}>
-                        {entranceResult.alreadyUsed ? 'Already Used' : 'Entry Denied'}
+                        Invalid QR Code
                       </p>
                     </div>
                   </div>
@@ -629,100 +556,55 @@ export default function QRReader() {
                   textAlign: 'center',
                   color: '#333'
                 }}>
-                  {entranceResult.message}
+                  {redirectResult.message}
                 </div>
                 
-                {entranceResult.ticketData && (
+                {!redirectResult.success && (
                   <div style={{ 
-                    background: entranceResult.success 
-                      ? 'linear-gradient(135deg, #e8f5e8, #c8e6c9)'
-                      : 'linear-gradient(135deg, #ffebee, #ffcdd2)',
-                    padding: '20px', 
+                    textAlign: 'center',
+                    background: '#f8f9fa',
+                    padding: '20px',
                     borderRadius: '12px',
-                    marginBottom: '24px',
-                    border: entranceResult.success 
-                      ? '2px solid #4caf50'
-                      : '2px solid #f44336'
+                    border: '2px dashed #dee2e6'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ 
-                          fontWeight: 'bold', 
-                          fontSize: '22px', 
-                          marginBottom: '8px',
-                          color: '#333'
-                        }}>
-                          👤 {entranceResult.ticketData.name}
-                        </div>
-                        <div style={{ 
-                          color: '#666', 
-                          fontSize: '16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          🎵 {entranceResult.ticketData.bandName}
-                        </div>
-                      </div>
-                      <div style={{ 
-                        background: entranceResult.success ? '#2e7d32' : '#d32f2f',
-                        color: 'white',
-                        padding: '12px 20px',
-                        borderRadius: '25px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                      }}>
-                        {entranceResult.success ? '✓ 入場済み' : '✗ 未処理'}
-                      </div>
+                    <div style={{ fontSize: '16px', marginBottom: '16px', color: '#666' }}>
+                      ホームページに戻ります
+                    </div>
+                    <div style={{ 
+                      fontSize: '32px', 
+                      fontWeight: 'bold', 
+                      color: '#d32f2f',
+                      background: '#ffebee',
+                      borderRadius: '50%',
+                      width: '70px',
+                      height: '70px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      border: '3px solid #f44336'
+                    }}>
+                      {countdown}
                     </div>
                   </div>
                 )}
-                
-                <div style={{ 
-                  textAlign: 'center',
-                  background: '#f8f9fa',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  border: '2px dashed #dee2e6'
-                }}>
-                  <div style={{ fontSize: '16px', marginBottom: '16px', color: '#666' }}>
-                    ホームページに戻ります
-                  </div>
-                  <div style={{ 
-                    fontSize: '32px', 
-                    fontWeight: 'bold', 
-                    color: entranceResult.success ? '#2e7d32' : '#d32f2f',
-                    background: entranceResult.success ? '#e8f5e8' : '#ffebee',
-                    borderRadius: '50%',
-                    width: '70px',
-                    height: '70px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    border: `3px solid ${entranceResult.success ? '#4caf50' : '#f44336'}`
-                  }}>
-                    {countdown}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* 使用方法（結果表示中は非表示） */}
-        {!entranceResult && !processing && (
+        {!redirectResult && !processing && (
           <div className="info-card">
-            <h3 style={{ color: '#333', marginBottom: '16px' }}>🎫 入場処理システム</h3>
+            <h3 style={{ color: '#333', marginBottom: '16px' }}>🎫 QRコードリーダー</h3>
             <div style={{ color: '#666', lineHeight: '1.8' }}>
               <p><strong>1.</strong> カメラが自動的に起動します</p>
               <p><strong>2.</strong> チケットのQRコードをカメラに向ける</p>
-              <p><strong>3.</strong> 自動的に入場処理が実行されます</p>
-              <p><strong>4.</strong> 処理完了後、次のチケットをスキャンできます</p>
-              <p style={{ color: '#f57c00', fontWeight: 'bold', marginTop: '12px' }}>
-                ⚠️ 使用済みチケットは再度入場できません
+              <p><strong>3.</strong> 自動的にチケットページに遷移します</p>
+              <p><strong>4.</strong> チケット詳細ページで入場処理が行われます</p>
+              <p style={{ color: '#2e7d32', fontWeight: 'bold', marginTop: '12px' }}>
+                ✅ チケットページで入場状況が確認できます
               </p>
             </div>
           </div>
