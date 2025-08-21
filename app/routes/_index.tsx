@@ -91,14 +91,57 @@ export default function Index() {
           }
         }
         
+        /* メイングリッドシステム */
+        .main-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          margin-top: 24px;
+          align-items: center;
+        }
+        
+        .main-grid .section-card {
+          width: 90%;
+          max-width: 400px;
+        }
+        
+        @media (min-width: 768px) {
+          .main-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 32px;
+            align-items: stretch;
+          }
+          
+          .main-grid .section-card {
+            width: 100%;
+            max-width: none;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .main-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+          }
+        }
+        
         .section-card {
           background: white;
           border-radius: 16px;
           box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-          margin: 0 12px 20px 12px;
           overflow: hidden;
-          /* モバイルでのタッチフィードバック */
           position: relative;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .section-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
         .section-card::before {
@@ -108,7 +151,7 @@ export default function Index() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(25, 118, 210, 0.02);
+          background: linear-gradient(135deg, rgba(25, 118, 210, 0.02), rgba(25, 118, 210, 0.05));
           opacity: 0;
           transition: opacity 0.2s ease;
           pointer-events: none;
@@ -120,7 +163,6 @@ export default function Index() {
         
         @media (min-width: 600px) {
           .section-card {
-            margin: 0 0 28px 0;
             border-radius: 20px;
           }
         }
@@ -170,12 +212,26 @@ export default function Index() {
         @media (min-width: 600px) {
           .section-title {
             font-size: 18px;
+            gap: 10px;
+          }
+        }
+        
+        @media (min-width: 960px) {
+          .section-title {
+            font-size: 20px;
             gap: 12px;
           }
         }
         
         .section-content {
-          padding: 20px 20px 24px 20px;
+          padding: 20px 24px 24px 24px;
+          width: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
         }
         
         @media (min-width: 600px) {
@@ -183,8 +239,17 @@ export default function Index() {
             padding: 24px 28px 28px 28px;
           }
         }
+        
+        @media (min-width: 960px) {
+          .section-content {
+            padding: 28px 32px 32px 32px;
+          }
+        }
         .form-group {
           margin-bottom: 18px;
+          width: 100%;
+          overflow: hidden;
+          position: relative;
         }
         
         .form-input {
@@ -200,6 +265,13 @@ export default function Index() {
           -webkit-appearance: none;
           appearance: none;
           line-height: 1.5;
+          /* iOS Safariのズーム防止の強化 */
+          -webkit-text-size-adjust: 100%;
+          -moz-text-size-adjust: 100%;
+          -ms-text-size-adjust: 100%;
+          text-size-adjust: 100%;
+          max-width: 100%;
+          min-width: 0;
         }
         
         .form-input:focus {
@@ -260,6 +332,17 @@ export default function Index() {
           .primary-btn {
             padding: 18px 28px;
             border-radius: 14px;
+            font-size: 16px;
+            min-height: 56px;
+          }
+        }
+        
+        @media (min-width: 960px) {
+          .primary-btn {
+            padding: 20px 32px;
+            border-radius: 16px;
+            font-size: 17px;
+            min-height: 60px;
           }
         }
         
@@ -311,6 +394,17 @@ export default function Index() {
           .secondary-btn {
             padding: 18px 28px;
             border-radius: 14px;
+            font-size: 16px;
+            min-height: 56px;
+          }
+        }
+        
+        @media (min-width: 960px) {
+          .secondary-btn {
+            padding: 20px 32px;
+            border-radius: 16px;
+            font-size: 17px;
+            min-height: 60px;
           }
         }
         
@@ -329,12 +423,6 @@ export default function Index() {
           text-align: center;
           margin-top: 12px;
           font-style: italic;
-        }
-        .divider {
-          height: 2px;
-          background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
-          margin: 24px 0;
-          border: none;
         }
         .index-header {
           background: linear-gradient(135deg, #1976d2, #42a5f5);
@@ -448,14 +536,20 @@ export default function Index() {
           transform: translateY(0);
         }
         .content-wrapper {
-          max-width: 800px;
+          max-width: 1000px;
           margin: 0 auto;
-          padding: 0 0 40px 0;
+          padding: 0 16px 40px 16px;
         }
         
         @media (min-width: 600px) {
           .content-wrapper {
-            padding: 0 20px 48px 20px;
+            padding: 0 24px 48px 24px;
+          }
+        }
+        
+        @media (min-width: 960px) {
+          .content-wrapper {
+            padding: 0 32px 56px 32px;
           }
         }
       `}</style>
@@ -489,125 +583,211 @@ export default function Index() {
         <div style={{ 
           background: 'linear-gradient(135deg, #1976d2, #42a5f5)', 
           color: 'white', 
-          padding: '24px 20px', 
-          borderRadius: '20px', 
+          padding: '32px 24px', 
+          borderRadius: '24px', 
           textAlign: 'center', 
-          margin: '0 12px 24px 12px',
+          marginBottom: '32px',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 8px 24px rgba(25, 118, 210, 0.2)'
+          boxShadow: '0 8px 32px rgba(25, 118, 210, 0.25)'
         }}>
           <div style={{
             position: 'absolute',
-            top: '-50%',
-            right: '-20%',
+            top: '-30%',
+            right: '-15%',
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+            borderRadius: '50%'
+          }}></div>
+          <div style={{
+            position: 'absolute',
+            bottom: '-20%',
+            left: '-10%',
             width: '150px',
             height: '150px',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
             borderRadius: '50%'
           }}></div>
           <h2 style={{ 
-            margin: '0 0 12px 0', 
-            fontSize: '20px',
+            margin: '0 0 16px 0', 
+            fontSize: '24px',
             fontWeight: 700,
-            lineHeight: 1.3,
+            lineHeight: 1.2,
             position: 'relative',
             zIndex: 1
           }}>✨ 新形式チケットシステム</h2>
           <p style={{ 
             margin: 0, 
             opacity: 0.95,
-            fontSize: '14px',
+            fontSize: '16px',
             lineHeight: 1.5,
             fontWeight: 400,
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
+            maxWidth: '500px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
           }}>
             イベント作成からチケット発行まで、すべて統合管理
           </p>
         </div>
         
-        {/* イベント管理者向けセクション */}
-        <div className="section-card">
-          <div className="section-header">
-            <h2 className="section-title">👑 イベント管理者</h2>
-          </div>
-          <div className="section-content">
-            <p style={{ marginBottom: '20px', color: '#757575', lineHeight: '1.6', fontSize: '14px' }}>
-              イベントの作成・編集・全体管理を行います
-            </p>
-            <button 
-              className="primary-btn"
-              onClick={navigateToOwner}
-            >
-              📋 イベント管理画面
-            </button>
-          </div>
-        </div>
-
-        <hr className="divider" />
-        
-        {/* チケット発行担当者向けセクション */}
-        <div className="section-card">
-          <div className="section-header secondary">
-            <h2 className="section-title">🎫 チケット発行担当</h2>
-          </div>
-          <div className="section-content">
-            <p style={{ marginBottom: '20px', color: '#757575', lineHeight: '1.6', fontSize: '14px' }}>
-              特定のイベントでチケットを発行・管理します
-            </p>
-            <div className="form-group">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="担当するイベント名を入力してください"
-                value={eventTitle}
-                onChange={(e) => setEventTitle(e.target.value)}
-              />
+        {/* メイン機能グリッド */}
+        <div className="main-grid">
+          {/* イベント管理者向けセクション */}
+          <div className="section-card">
+            <div className="section-header">
+              <h2 className="section-title">👑 イベント管理者</h2>
             </div>
-            <button 
-              className="secondary-btn"
-              onClick={navigateToAdmin}
-            >
-              🎫 チケット発行画面
-            </button>
+            <div className="section-content">
+              <div>
+                <p style={{ marginBottom: '24px', color: '#757575', lineHeight: '1.6', fontSize: '14px' }}>
+                  イベントの作成・編集・全体管理を行います
+                </p>
+              </div>
+              <div>
+                <button 
+                  className="primary-btn"
+                  onClick={navigateToOwner}
+                >
+                  📋 イベント管理画面
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          {/* チケット発行担当者向けセクション */}
+          <div className="section-card">
+            <div className="section-header secondary">
+              <h2 className="section-title">🎫 チケット発行担当</h2>
+            </div>
+            <div className="section-content">
+              <div>
+                <p style={{ marginBottom: '24px', color: '#757575', lineHeight: '1.6', fontSize: '14px' }}>
+                  特定のイベントでチケットを発行・管理します
+                </p>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="担当するイベント名を入力してください"
+                    value={eventTitle}
+                    onChange={(e) => setEventTitle(e.target.value)}
+                    inputMode="text"
+                    autoComplete="off"
+                    style={{
+                      fontSize: '16px',
+                      WebkitTextSizeAdjust: '100%',
+                      textSizeAdjust: '100%'
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <button 
+                  className="secondary-btn"
+                  onClick={navigateToAdmin}
+                >
+                  🎫 チケット発行画面
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* QRコード読み取りセクション */}
+          <div className="section-card">
+            <div className="section-header" style={{ background: 'linear-gradient(135deg, #388e3c, #66bb6a)' }}>
+              <h2 className="section-title">📱 QRコード読み取り</h2>
+            </div>
+            <div className="section-content">
+              <div>
+                <p style={{ marginBottom: '24px', color: '#757575', lineHeight: '1.6', fontSize: '14px' }}>
+                  チケットのQRコードをスキャンして入場確認を行います
+                </p>
+              </div>
+              <div>
+                <button 
+                  className="primary-btn"
+                  onClick={navigateToQRReader}
+                  style={{ 
+                    background: 'linear-gradient(135deg, #388e3c, #66bb6a)',
+                    boxShadow: '0 4px 12px rgba(56, 142, 60, 0.25)',
+                    marginBottom: '0'
+                  }}
+                >
+                  📸 QRコードを読み取る
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* QRコード読み取りセクション */}
-        <div className="section-card">
-          <div className="section-header" style={{ background: 'linear-gradient(135deg, #388e3c, #66bb6a)' }}>
-            <h2 className="section-title">📱 QRコード読み取り</h2>
+        {/* 説明セクション - フル幅 */}
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '20px', 
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          margin: '32px 0 0 0',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+            padding: '20px 24px',
+            borderBottom: '1px solid #e1e5e9'
+          }}>
+            <h3 style={{ 
+              color: '#212121', 
+              margin: 0,
+              fontSize: '18px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>📋 システムの使い方</h3>
           </div>
-          <div className="section-content">
-            <p style={{ marginBottom: '20px', color: '#757575', lineHeight: '1.6', fontSize: '14px' }}>
-              チケットのQRコードをスキャンして入場確認を行います
-            </p>
-            <button 
-              className="primary-btn"
-              onClick={navigateToQRReader}
-              style={{ 
-                background: 'linear-gradient(135deg, #388e3c, #66bb6a)',
-                boxShadow: '0 4px 12px rgba(56, 142, 60, 0.25)',
-                marginBottom: '12px'
-              }}
-            >
-              📸 QRコードを読み取る
-            </button>
-          </div>
-        </div>
-
-        <hr className="divider" />
-
-        {/* 説明セクション */}
-        <div className="section-card">
-          <div className="section-content">
-            <h3 style={{ color: '#333', marginBottom: '16px' }}>📋 システムの使い方</h3>
-            <div style={{ color: '#666', lineHeight: '1.8' }}>
-              <p><strong>1. イベント管理者:</strong> 新しいイベントを作成し、基本情報を設定</p>
-              <p><strong>2. チケット発行担当:</strong> 来場者にチケットを発行・QRコード生成</p>
-              <p><strong>3. QRコード読み取り:</strong> 来場者のチケットをスキャンして入場確認</p>
-              <p><strong>4. 入場時:</strong> QRコードをスキャンして入場処理を完了</p>
+          <div style={{ padding: '24px' }}>
+            <div style={{ 
+              display: 'grid',
+              gap: '16px',
+              gridTemplateColumns: '1fr',
+            }}>
+              <div style={{
+                padding: '16px',
+                background: '#f8f9fa',
+                borderRadius: '12px',
+                borderLeft: '4px solid #1976d2'
+              }}>
+                <strong style={{ color: '#1976d2' }}>1. イベント管理者:</strong>
+                <span style={{ color: '#757575', marginLeft: '8px' }}>新しいイベントを作成し、基本情報を設定</span>
+              </div>
+              <div style={{
+                padding: '16px',
+                background: '#f8f9fa',
+                borderRadius: '12px',
+                borderLeft: '4px solid #dc004e'
+              }}>
+                <strong style={{ color: '#dc004e' }}>2. チケット発行担当:</strong>
+                <span style={{ color: '#757575', marginLeft: '8px' }}>来場者にチケットを発行・QRコード生成</span>
+              </div>
+              <div style={{
+                padding: '16px',
+                background: '#f8f9fa',
+                borderRadius: '12px',
+                borderLeft: '4px solid #388e3c'
+              }}>
+                <strong style={{ color: '#388e3c' }}>3. QRコード読み取り:</strong>
+                <span style={{ color: '#757575', marginLeft: '8px' }}>来場者のチケットをスキャンして入場確認</span>
+              </div>
+              <div style={{
+                padding: '16px',
+                background: '#f8f9fa',
+                borderRadius: '12px',
+                borderLeft: '4px solid #ff9800'
+              }}>
+                <strong style={{ color: '#ff9800' }}>4. 入場時:</strong>
+                <span style={{ color: '#757575', marginLeft: '8px' }}>QRコードをスキャンして入場処理を完了</span>
+              </div>
             </div>
           </div>
         </div>

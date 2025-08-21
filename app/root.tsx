@@ -164,6 +164,10 @@ export const theme = createTheme({
         'input, textarea, select': {
           fontSize: '16px !important',
           fontFamily: 'inherit',
+          maxWidth: '100%',
+          width: '100%',
+          WebkitTextSizeAdjust: '100%',
+          textSizeAdjust: '100%',
         },
         // フォーカス時のアウトライン改善
         'button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible': {
