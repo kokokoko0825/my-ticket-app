@@ -8,8 +8,8 @@ interface TicketData {
   name: string;
   bandName: string;
   createdBy: string;
-  state: "未" | "済";
   status: "未" | "済";
+  state?: "未" | "済"; // 既存データとの互換性のため一時的に保持
   createdAt: any;
 }
 
@@ -58,15 +58,15 @@ export default function NewFormatTicketPage() {
       setTicketData(data);
 
       // チケットが未使用の場合のみステータスを更新
-      const currentStatus = data.state || data.status || "未";
+      const currentStatus = data.status || data.state || "未";
       
       if (currentStatus === "未") {
         console.log("🎫 チケット状態を更新中...");
         
-        // 両方のフィールドを更新（互換性のため）
+        // statusフィールドに統一し、stateフィールドは削除
         await setDoc(ticketDocRef, {
-          state: "済",
-          status: "済"
+          status: "済",
+          state: null // stateフィールドを削除
         }, { merge: true });
 
         console.log("✅ チケット更新完了");

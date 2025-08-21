@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
+import { auth } from "../root";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import firebase from "firebase/compat/app";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,6 +15,7 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   const [eventTitle, setEventTitle] = useState(""); // イベントタイトル入力フィールドの状態
+  const [user, setUser] = useState<firebase.User | null>(null);
   const navigate = useNavigate();
 
   const navigateToAdmin = () => {
@@ -27,18 +31,33 @@ export default function Index() {
     navigate("/owner");
   };
 
+  const navigateToQRReader = () => {
+    navigate("/qr-reader");
+  };
+
+  // ユーザー認証状態の監視
+  useEffect(() => { 
+    const unsubscribe = onAuthStateChanged(auth, (user) => setUser(user as firebase.User | null));
+    return () => unsubscribe();
+  }, []);
+
+  // ログアウト処理
+  const signOutUser = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#f5f5f5',
-      fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-      padding: '32px 24px'
+      fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
     }}>
       <style>{`
-        .main-container {
-          max-width: 800px;
-          margin: 0 auto;
-        }
+
         .main-title {
           font-size: 32px;
           font-weight: 600;
@@ -130,10 +149,77 @@ export default function Index() {
           margin: 24px 0;
           border: none;
         }
+        .index-header {
+          background: #1976d2;
+          color: white;
+          padding: 16px 24px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          margin-bottom: 24px;
+        }
+        .index-nav {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .index-title {
+          font-size: 24px;
+          font-weight: 600;
+          margin: 0;
+        }
+        .user-info {
+          font-size: 14px;
+          opacity: 0.9;
+        }
+        .header-btn {
+          background: transparent;
+          border: 2px solid white;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .header-btn:hover {
+          background: white;
+          color: #1976d2;
+        }
+        .content-wrapper {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 0 24px 32px 24px;
+        }
       `}</style>
 
-      <div className="main-container">
-        <h1 className="main-title">🎫 チケット管理システム</h1>
+      {/* ヘッダー */}
+      <div className="index-header">
+        <div className="index-nav">
+          <div></div>
+          <h1 className="index-title">🎫 チケット管理システム</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {user && (
+              <>
+                <div className="user-info">
+                  {user.displayName}さん
+                </div>
+                <button 
+                  className="header-btn"
+                  onClick={signOutUser}
+                  style={{ fontSize: '12px', padding: '6px 12px' }}
+                >
+                  ログアウト
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="content-wrapper">
         
         <div style={{ 
           background: 'linear-gradient(135deg, #1976d2, #1565c0)', 
@@ -196,6 +282,34 @@ export default function Index() {
           </div>
         </div>
 
+        {/* QRコード読み取りセクション */}
+        <div className="section-card">
+          <div className="section-header" style={{ background: 'linear-gradient(135deg, #388e3c, #2e7d32)' }}>
+            <h2 className="section-title">📱 QRコード読み取り</h2>
+          </div>
+          <div className="section-content">
+            <p style={{ marginBottom: '20px', color: '#666', lineHeight: '1.6' }}>
+              チケットのQRコードをスキャンして入場確認を行います
+            </p>
+            <button 
+              className="primary-btn"
+              onClick={navigateToQRReader}
+              style={{ 
+                background: '#388e3c',
+                marginBottom: '12px'
+              }}
+              onMouseOver={(e) => (e.target as HTMLButtonElement).style.background = '#2e7d32'}
+              onMouseOut={(e) => (e.target as HTMLButtonElement).style.background = '#388e3c'}
+              onFocus={(e) => (e.target as HTMLButtonElement).style.background = '#2e7d32'}
+              onBlur={(e) => (e.target as HTMLButtonElement).style.background = '#388e3c'}
+            >
+              📸 QRコードを読み取る
+            </button>
+          </div>
+        </div>
+
+        <hr className="divider" />
+
         {/* 説明セクション */}
         <div className="section-card">
           <div className="section-content">
@@ -203,7 +317,8 @@ export default function Index() {
             <div style={{ color: '#666', lineHeight: '1.8' }}>
               <p><strong>1. イベント管理者:</strong> 新しいイベントを作成し、基本情報を設定</p>
               <p><strong>2. チケット発行担当:</strong> 来場者にチケットを発行・QRコード生成</p>
-              <p><strong>3. 入場時:</strong> QRコードをスキャンして入場処理を完了</p>
+              <p><strong>3. QRコード読み取り:</strong> 来場者のチケットをスキャンして入場確認</p>
+              <p><strong>4. 入場時:</strong> QRコードをスキャンして入場処理を完了</p>
             </div>
           </div>
         </div>

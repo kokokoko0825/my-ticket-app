@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, doc, setDoc, deleteDoc, query, where, Timestamp } from "firebase/firestore";
 import { db, auth } from "../root";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import firebase from "firebase/compat/app";
 
 interface DocumentData {
   id: string;
@@ -54,11 +56,12 @@ export default function OwnerDashboard() {
   const [creatorFilter, setCreatorFilter] = useState("");
   const [bandNameFilter, setBandNameFilter] = useState("");
   const [showOnlyMyDocuments, setShowOnlyMyDocuments] = useState(false);
-  const [authStatus, setAuthStatus] = useState<string>("checking...");
+
   const [selectedEventForTickets, setSelectedEventForTickets] = useState<EventWithTickets | null>(null);
   const [showTicketsModal, setShowTicketsModal] = useState(false);
   const [currentEventTickets, setCurrentEventTickets] = useState<DocumentData[]>([]);
   const [filteredEventTickets, setFilteredEventTickets] = useState<DocumentData[]>([]);
+  const [user, setUser] = useState<firebase.User | null>(null);
   
   // イベント編集用のstate
   const [showEditEventModal, setShowEditEventModal] = useState(false);
@@ -71,12 +74,40 @@ export default function OwnerDashboard() {
   const fetchCollections = async () => {
     try {
       setCollectionsLoading(true);
-      // 既知のコレクションを設定（基本コレクション + 動的に作成されるイベントコレクション）
-      // ticketsコレクションをダッシュボードから除外
+      
+      if (!auth.currentUser) {
+        setCollections(["users"]);
+        return;
+      }
+
+      // 基本コレクション
       const baseCollections = ["users", "events", "products"];
       
-      // LocalStorageから以前に作成されたコレクション名を取得
-      const savedCollections = JSON.parse(localStorage.getItem('customCollections') || '[]');
+      // Firestoreからユーザーのカスタムコレクション情報を取得
+      let savedCollections: string[] = [];
+      try {
+        const userDocSnapshot = await getDocs(query(collection(db, "users"), where("uid", "==", auth.currentUser.uid)));
+        
+        if (!userDocSnapshot.empty) {
+          const userData = userDocSnapshot.docs[0].data();
+          savedCollections = userData.customCollections || [];
+        } else {
+          // ユーザードキュメントが存在しない場合は作成
+          const userDocRef = doc(db, "users", auth.currentUser.uid);
+          await setDoc(userDocRef, {
+            uid: auth.currentUser.uid,
+            email: auth.currentUser.email,
+            displayName: auth.currentUser.displayName,
+            customCollections: [],
+            createdAt: Timestamp.now(),
+            lastLoginAt: Timestamp.now()
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user collections:", error);
+        savedCollections = [];
+      }
+      
       const knownCollections = [...baseCollections, ...savedCollections];
       
       // 各コレクションが存在するかチェック
@@ -101,7 +132,7 @@ export default function OwnerDashboard() {
       setCollections(existingCollections.length > 0 ? existingCollections : ["users"]);
     } catch (error) {
       console.error("Error fetching collections:", error);
-      setCollections(["users"]); // フォールバック（ticketsから変更）
+      setCollections(["users"]); // フォールバック
     } finally {
       setCollectionsLoading(false);
     }
@@ -507,10 +538,26 @@ export default function OwnerDashboard() {
         const updatedCollections = [...collections, collectionName];
         setCollections(updatedCollections);
         
-        // LocalStorageに保存（基本コレクション以外のカスタムコレクション）
-        const baseCollections = ["tickets", "users", "events", "products"];
-        const customCollections = updatedCollections.filter(name => !baseCollections.includes(name));
-        localStorage.setItem('customCollections', JSON.stringify(customCollections));
+        // Firestoreのユーザードキュメントに保存（基本コレクション以外のカスタムコレクション）
+        try {
+          const baseCollections = ["tickets", "users", "events", "products"];
+          const customCollections = updatedCollections.filter(name => !baseCollections.includes(name));
+          
+          if (auth.currentUser) {
+            const userDocRef = doc(db, "users", auth.currentUser.uid);
+            await setDoc(userDocRef, {
+              uid: auth.currentUser.uid,
+              email: auth.currentUser.email,
+              displayName: auth.currentUser.displayName,
+              customCollections: customCollections,
+              lastLoginAt: Timestamp.now()
+            }, { merge: true }); // mergeオプションで既存フィールドを保持
+            
+            console.log("Custom collections saved to Firestore:", customCollections);
+          }
+        } catch (error) {
+          console.error("Error saving custom collections to Firestore:", error);
+        }
       }
 
       // もし作成したコレクションを表示中の場合はリストを更新
@@ -952,22 +999,43 @@ export default function OwnerDashboard() {
 
   // 認証状態の監視
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user as firebase.User | null);
       if (user) {
-        setAuthStatus(`Logged in as: ${user.email} (${user.uid})`);
         console.log("Auth state changed - User logged in:", {
           email: user.email,
           uid: user.uid,
           displayName: user.displayName
         });
+        
+        // ユーザーのログイン時刻を更新
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          await setDoc(userDocRef, {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            lastLoginAt: Timestamp.now()
+          }, { merge: true });
+        } catch (error) {
+          console.error("Error updating user login time:", error);
+        }
       } else {
-        setAuthStatus("Not logged in");
         console.log("Auth state changed - User logged out");
       }
     });
 
     return () => unsubscribe();
   }, []);
+
+  // ログアウト処理
+  const signOutUser = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   useEffect(() => {
     fetchCollections();
@@ -1341,13 +1409,13 @@ export default function OwnerDashboard() {
           position: fixed;
           bottom: 24px;
           right: 24px;
-          width: 56px;
-          height: 56px;
+          width: 72px;
+          height: 72px;
           border-radius: 50%;
           background: #1976d2;
           border: none;
           color: white;
-          font-size: 24px;
+          font-size: 32px;
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           transition: all 0.2s;
@@ -1588,13 +1656,13 @@ export default function OwnerDashboard() {
           position: fixed;
           bottom: 24px;
           right: 24px;
-          width: 56px;
-          height: 56px;
+          width: 72px;
+          height: 72px;
           border-radius: 50%;
           background: #ff9800;
           border: none;
           color: white;
-          font-size: 24px;
+          font-size: 32px;
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           transition: all 0.2s;
@@ -1611,10 +1679,10 @@ export default function OwnerDashboard() {
         <div>
           <h1 className="dashboard-title">データ管理ダッシュボード</h1>
           <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-            認証状態: {authStatus}
+            {user && `ようこそ、${user.displayName}さん`}
           </div>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <button
             className="refresh-btn"
             onClick={() => fetchDocuments()}
@@ -1629,6 +1697,18 @@ export default function OwnerDashboard() {
             title="Firestore接続テスト"
           >
             🔧 テスト
+          </button>
+          <button
+            className="refresh-btn"
+            onClick={signOutUser}
+            style={{ 
+              background: "#f44336",
+              fontSize: "12px",
+              padding: "8px 16px"
+            }}
+            title="ログアウト"
+          >
+            ログアウト
           </button>
         </div>
       </div>

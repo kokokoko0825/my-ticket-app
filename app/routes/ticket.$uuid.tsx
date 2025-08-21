@@ -7,8 +7,8 @@ interface TicketData {
   uuid?: string;
   name: string;
   bandName?: string;
-  status?: "未" | "済";
-  state?: "未" | "済"; // admin.tsxで使用されるフィールド名
+  status: "未" | "済";
+  state?: "未" | "済"; // 既存データとの互換性のため一時的に保持
   createdBy: string;
   eventTitle?: string;
   eventId?: string;
@@ -156,7 +156,7 @@ export default function Ticket() {
         return;
       }
 
-        // statusまたはstateフィールドをチェック（admin.tsxはstateを使用）
+        // statusフィールドを優先し、なければstateフィールドをチェック
         const currentStatus = foundTicketData.status || foundTicketData.state || "未";
         console.log("📊 Current ticket status:", currentStatus);
 
@@ -167,17 +167,14 @@ export default function Ticket() {
         return;
       }
 
-        // ステータスを「済」に更新（admin.tsxがstateを使用している場合はそちらも更新）
-        const updateData: Record<string, string> = {};
-        if (foundTicketData.status !== undefined) {
-          updateData.status = "済";
-        }
+        // ステータスを「済」に更新（statusフィールドを優先、既存のstateフィールドがあれば削除）
+        const updateData: Record<string, string | null> = {
+          status: "済"
+        };
+        
+        // 既存のstateフィールドがある場合は削除
         if (foundTicketData.state !== undefined) {
-          updateData.state = "済";
-        }
-        // 両方設定されていない場合は、新しくstatusフィールドを作成
-        if (Object.keys(updateData).length === 0) {
-          updateData.status = "済";
+          updateData.state = null;
         }
         
         console.log("💾 Updating ticket with:", updateData);
@@ -622,10 +619,10 @@ export default function Ticket() {
                 <div className="ticket-info-row">
                   <span className="ticket-info-label">現在のステータス:</span>
                   <span className="ticket-info-value" style={{ 
-                    color: (ticketData.status || ticketData.state) === "済" ? '#f44336' : '#ff9800', 
+                    color: ticketData.status === "済" ? '#f44336' : '#ff9800', 
                     fontWeight: '600' 
                   }}>
-                    {(ticketData.status || ticketData.state) === "済" ? "使用済み" : "未使用"}
+                    {ticketData.status === "済" ? "使用済み" : "未使用"}
                   </span>
                 </div>
               </div>

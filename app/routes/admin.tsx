@@ -1,15 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "@remix-run/react";
-import { doc, setDoc, collection, getDocs, query, where, Timestamp } from "firebase/firestore";
+import { doc, setDoc, collection, getDocs, query, where, Timestamp, updateDoc } from "firebase/firestore";
 import { db, auth } from "../root";
 import { QRCodeCanvas } from "qrcode.react";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import firebase from "firebase/compat/app";
 
 interface TicketData {
   uuid: string;
   name: string;
   bandName: string;
   createdBy: string;
-  state: "未" | "済";
+  status: "未" | "済";
+  state?: "未" | "済"; // 既存データとの互換性のため一時的に保持
   createdAt: Timestamp;
 }
 
@@ -41,6 +44,9 @@ export default function AdminPage() {
   const [showTicketDisplay, setShowTicketDisplay] = useState(false);
   const [currentEventCollectionName, setCurrentEventCollectionName] = useState<string>("");
   const [currentEventUuid, setCurrentEventUuid] = useState<string>("");
+  const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
+  const [showSelectedTicketDisplay, setShowSelectedTicketDisplay] = useState(false);
+  const [user, setUser] = useState<firebase.User | null>(null);
 
   // イベントタイトルが空の場合はメインページにリダイレクト
   useEffect(() => {
@@ -48,6 +54,21 @@ export default function AdminPage() {
       navigate("/");
     }
   }, [eventTitle, navigate]);
+
+  // ユーザー認証状態の監視
+  useEffect(() => { 
+    const unsubscribe = onAuthStateChanged(auth, (user) => setUser(user as firebase.User | null));
+    return () => unsubscribe();
+  }, []);
+
+  // ログアウト処理
+  const signOutUser = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   // イベント情報の取得
   const fetchEventData = useCallback(async () => {
@@ -115,13 +136,17 @@ export default function AdminPage() {
       
       ticketsSnapshot.docs.forEach(docSnapshot => {
         const data = docSnapshot.data();
-        if (data.uuid && data.name && data.state && data.createdBy) {
+        // status または state のいずれかが存在し、必要なフィールドがある場合
+        if (data.uuid && data.name && (data.status || data.state) && data.createdBy) {
+          // statusを優先し、なければstateを使用
+          const ticketStatus = data.status || data.state;
           ticketsList.push({
             uuid: data.uuid,
             name: data.name,
             bandName: data.bandName || "未設定", // 既存データ対応
             createdBy: data.createdBy,
-            state: data.state,
+            status: ticketStatus,
+            state: data.state, // 既存データとの互換性のため保持
             createdAt: data.createdAt
           } as TicketData);
         }
@@ -163,6 +188,35 @@ export default function AdminPage() {
     hasCreatedTicket: !!createdTicket, 
     hasEventData: !!eventData 
   });
+
+  // 既存チケットの表示処理
+  const handleTicketNameClick = async (ticket: TicketData) => {
+    try {
+      // イベント情報とコレクション名を設定
+      const eventCollectionName = eventTitle.trim()
+        .replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '')
+        .replace(/\s+/g, '') || `event_${Date.now()}`;
+      
+      // イベントUUIDを取得
+      const eventDocs = await getDocs(collection(db, eventCollectionName));
+      if (!eventDocs.empty) {
+        const eventDoc = eventDocs.docs[0];
+        const eventUuid = eventDoc.id;
+        
+        setSelectedTicket(ticket);
+        setCurrentEventCollectionName(eventCollectionName);
+        setCurrentEventUuid(eventUuid);
+        setShowSelectedTicketDisplay(true);
+        
+        console.log("Selected ticket for display:", ticket);
+      } else {
+        alert("イベント情報が見つかりません。");
+      }
+    } catch (error) {
+      console.error("Error displaying ticket:", error);
+      alert("チケット表示中にエラーが発生しました。");
+    }
+  };
 
   // チケット作成
   const createTicket = async () => {
@@ -219,7 +273,7 @@ export default function AdminPage() {
         name: visitorName.trim(),
         bandName: bandName.trim(),
         createdBy: auth.currentUser.uid,
-        state: "未",
+        status: "未",
         createdAt: Timestamp.now()
       };
 
@@ -228,6 +282,9 @@ export default function AdminPage() {
 
       // owner.tsxと統合された構造: eventCollection/eventUuid/tickets/ticketUuid
       await setDoc(doc(db, eventCollectionName, eventUuid, "tickets", newTicketUuid), ticketData);
+      
+      // 既存データでstateフィールドがある場合のマイグレーション処理
+      await migrateStateToStatus(eventCollectionName, eventUuid);
       
       console.log("Ticket created successfully");
       
@@ -258,6 +315,45 @@ export default function AdminPage() {
         stack: error instanceof Error ? error.stack : 'no-stack'
       });
       alert(`チケットの作成に失敗しました。\nエラー: ${error instanceof Error ? error.message : 'Unknown error'}\n詳細はコンソールを確認してください。`);
+    }
+  };
+
+  // 既存データのstateをstatusに移行する関数
+  const migrateStateToStatus = async (eventCollectionName: string, eventUuid: string) => {
+    try {
+      const ticketsCollection = collection(db, eventCollectionName, eventUuid, "tickets");
+      const ticketsSnapshot = await getDocs(ticketsCollection);
+      
+      const migrationPromises: Promise<void>[] = [];
+      
+      ticketsSnapshot.docs.forEach(docSnapshot => {
+        const data = docSnapshot.data();
+        
+        // stateフィールドはあるがstatusフィールドがない場合
+        if (data.state && !data.status) {
+          console.log(`Migrating ticket ${docSnapshot.id}: state -> status`);
+          
+          const migrationPromise = updateDoc(docSnapshot.ref, {
+            status: data.state,
+            // stateフィールドを削除
+            state: null
+          }).then(() => {
+            console.log(`✅ Migrated ticket ${docSnapshot.id}`);
+          }).catch((error) => {
+            console.error(`❌ Failed to migrate ticket ${docSnapshot.id}:`, error);
+          });
+          
+          migrationPromises.push(migrationPromise);
+        }
+      });
+      
+      if (migrationPromises.length > 0) {
+        console.log(`🔄 Migrating ${migrationPromises.length} tickets from state to status...`);
+        await Promise.all(migrationPromises);
+        console.log(`✅ Migration completed for ${migrationPromises.length} tickets`);
+      }
+    } catch (error) {
+      console.error("Error during state to status migration:", error);
     }
   };
 
@@ -417,8 +513,14 @@ export default function AdminPage() {
         .ticket-name {
           font-size: 16px;
           font-weight: 600;
-          color: #333;
+          color: #1976d2;
           margin: 0 0 4px 0;
+          cursor: pointer;
+          transition: color 0.2s;
+          text-decoration: underline;
+        }
+        .ticket-name:hover {
+          color: #1565c0;
         }
         .ticket-details {
           font-size: 12px;
@@ -520,8 +622,19 @@ export default function AdminPage() {
             ← 戻る
           </button>
           <h1 className="admin-title">{eventTitle} - 管理画面</h1>
-          <div className="user-info">
-            {auth.currentUser?.displayName}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {user && (
+              <div className="user-info">
+                {user.displayName}さん
+              </div>
+            )}
+            <button 
+              className="back-btn"
+              onClick={signOutUser}
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+            >
+              ログアウト
+            </button>
           </div>
         </div>
       </div>
@@ -628,13 +741,43 @@ export default function AdminPage() {
           <div className="section-header">
             <div className="tickets-header">
               <h2 className="section-title">発行済みチケット一覧</h2>
-              <button 
-                className="refresh-btn" 
-                onClick={fetchTickets} 
-                disabled={loading}
-              >
-                更新
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  className="refresh-btn" 
+                  onClick={fetchTickets} 
+                  disabled={loading}
+                >
+                  更新
+                </button>
+                <button 
+                  className="refresh-btn"
+                  onClick={async () => {
+                    try {
+                      const eventCollectionName = eventTitle.trim()
+                        .replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '')
+                        .replace(/\s+/g, '') || `event_${Date.now()}`;
+                      
+                      const eventDocs = await getDocs(collection(db, eventCollectionName));
+                      if (!eventDocs.empty) {
+                        const eventDoc = eventDocs.docs[0];
+                        const eventUuid = eventDoc.id;
+                        await migrateStateToStatus(eventCollectionName, eventUuid);
+                        alert("データ移行が完了しました。「更新」ボタンでチケット一覧を再読み込みしてください。");
+                      } else {
+                        alert("イベントが見つかりません。");
+                      }
+                    } catch (error) {
+                      console.error("Migration error:", error);
+                      alert("データ移行中にエラーが発生しました。");
+                    }
+                  }}
+                  disabled={loading}
+                  style={{ background: '#ff9800' }}
+                  title="既存のstateフィールドをstatusに移行"
+                >
+                  データ移行
+                </button>
+              </div>
             </div>
           </div>
           <div className="section-content">
@@ -645,15 +788,23 @@ export default function AdminPage() {
                 {tickets.map((ticket) => (
                   <li key={ticket.uuid} className="ticket-item">
                     <div className="ticket-info">
-                      <h3 className="ticket-name">{ticket.name}</h3>
+                      <button 
+                        className="ticket-name"
+                        onClick={() => handleTicketNameClick(ticket)}
+                        title="クリックしてチケットを表示"
+                        aria-label={`${ticket.name}さんのチケットを表示`}
+                        style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', textAlign: 'left', width: '100%' }}
+                      >
+                        {ticket.name}
+                      </button>
                       <p className="ticket-details">
                         🎸 バンド: {ticket.bandName} | UUID: {ticket.uuid} | 作成者: {ticket.createdBy}
                       </p>
                     </div>
                     <span 
-                      className={`status-badge ${ticket.state === "済" ? "status-completed" : "status-pending"}`}
+                      className={`status-badge ${ticket.status === "済" ? "status-completed" : "status-pending"}`}
                     >
-                      {ticket.state === "済" ? "✓ 入場済み" : "⏳ 未入場"}
+                      {ticket.status === "済" ? "✓ 入場済み" : "⏳ 未入場"}
                     </span>
                   </li>
                 ))}
@@ -667,7 +818,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* チケット表示オーバーレイ */}
+      {/* 新規作成チケット表示オーバーレイ */}
       {showTicketDisplay && createdTicket && (
         <div 
           className="ticket-overlay"
@@ -819,6 +970,181 @@ export default function AdminPage() {
                   <div style={{ fontSize: '14px' }}>
                     {eventData?.location || '〒510-0256 三重県鈴鹿市磯山1-9-8'}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 既存チケット表示オーバーレイ */}
+      {showSelectedTicketDisplay && selectedTicket && (
+        <div 
+          className="ticket-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="selected-ticket-modal-title"
+        >
+          <button 
+            className="overlay-backdrop"
+            onClick={() => setShowSelectedTicketDisplay(false)}
+            aria-label="モーダルを閉じる"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          />
+          <div className="ticket-modal">
+            <div className="ticket-modal-header">
+              <h2 id="selected-ticket-modal-title" className="ticket-modal-title">📱 {selectedTicket.name}さんのチケット</h2>
+              <button 
+                className="close-btn"
+                onClick={() => setShowSelectedTicketDisplay(false)}
+                title="閉じる"
+              >
+                ×
+              </button>
+            </div>
+            <div className="ticket-modal-content">
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <strong>発行済みチケットの再表示</strong>
+              </div>
+              
+              <div style={{ 
+                backgroundColor: 'white', 
+                color: 'black', 
+                padding: '20px', 
+                borderRadius: '8px',
+                marginBottom: '16px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                border: '2px solid black'
+              }}>
+                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
+                  {selectedTicket.name}さん用入場チケット
+                </div>
+                <div style={{ 
+                  fontSize: '28px', 
+                  fontWeight: '600',
+                  textAlign: 'center', 
+                  margin: '16px 0',
+                  fontFamily: 'Irish Grover, cursive' 
+                }}>
+                  {eventData?.title || eventTitle}
+                </div>
+                <div style={{ fontSize: '14px', textAlign: 'right', marginBottom: '16px' }}>
+                  {eventData?.location ? `in ${eventData.location}` : 'in Suzuka Sound Stage'}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    {eventData?.dates && eventData.dates.length > 0 && (
+                      <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                        Date: {eventData.dates.map(date => {
+                          try {
+                            const dateObj = new Date(date);
+                            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+                          } catch {
+                            return date;
+                          }
+                        }).join(', ')}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                      Open: {(() => {
+                        if (eventData?.dates && eventData.dates.length > 0) {
+                          try {
+                            const firstDate = eventData.dates[0];
+                            if (firstDate.includes('T')) {
+                              const timePart = firstDate.split('T')[1];
+                              return timePart || '18:00';
+                            } else {
+                              const dateObj = new Date(firstDate);
+                              const hours = dateObj.getHours().toString().padStart(2, '0');
+                              const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            }
+                          } catch {
+                            return '18:00';
+                          }
+                        }
+                        return eventData?.openTime || '18:00';
+                      })()}
+                    </div>
+                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                      バンド: {selectedTicket.bandName}
+                    </div>
+                    {eventData?.price !== undefined && (
+                      <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                        Price: ¥{eventData.price.toLocaleString()}{(() => {
+                          const isOneDrink = eventData?.oneDrink !== undefined ? eventData.oneDrink : true;
+                          return isOneDrink ? ' + 1dr' : '';
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                  <QRCodeCanvas 
+                    value={`${window.location.origin}/ticket/${currentEventCollectionName}/${currentEventUuid}/${selectedTicket.uuid}`} 
+                    size={75} 
+                    level="H" 
+                  />
+                </div>
+              </div>
+              
+              <div style={{ 
+                backgroundColor: 'white', 
+                color: 'black', 
+                padding: '20px', 
+                borderRadius: '8px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                border: '2px solid black'
+              }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '12px', fontSize: '14px' }}>
+                  *注意事項*
+                </div>
+                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
+                  ・当日はドリンク代として500円を持ってきてください。
+                </div>
+                <div style={{ fontSize: '14px', marginBottom: '16px' }}>
+                  ・ライブハウスには駐車場がないので電車、バスの利用をお願いします。
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '14px', marginBottom: '8px' }}>
+                    会場の場所はこちら↓
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    {eventData?.location || '〒510-0256 三重県鈴鹿市磯山1-9-8'}
+                  </div>
+                </div>
+              </div>
+              
+              <div style={{ 
+                textAlign: 'center', 
+                marginTop: '20px',
+                padding: '16px',
+                backgroundColor: selectedTicket.status === "済" ? '#ffebee' : '#e8f5e8',
+                borderRadius: '8px',
+                border: `2px solid ${selectedTicket.status === "済" ? '#f44336' : '#4caf50'}`
+              }}>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold',
+                  color: selectedTicket.status === "済" ? '#c62828' : '#2e7d32',
+                  marginBottom: '8px'
+                }}>
+                  {selectedTicket.status === "済" ? "⚠️ 入場済みチケット" : "✅ 未使用チケット"}
+                </div>
+                <div style={{ 
+                  fontSize: '14px',
+                  color: selectedTicket.status === "済" ? '#d32f2f' : '#388e3c'
+                }}>
+                  {selectedTicket.status === "済" 
+                    ? "このチケットは既に使用されています" 
+                    : "このチケットはまだ使用されていません"}
                 </div>
               </div>
             </div>

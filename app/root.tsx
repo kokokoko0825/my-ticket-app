@@ -5,7 +5,7 @@ import {
   FirebaseApp,
 } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import type { MetaFunction, LinksFunction } from "@remix-run/node";
 import {
   Links,
@@ -22,8 +22,6 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 // Material UIのスタイルはentry.client.tsxとentry.server.tsxで管理
 
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 
 const firebaseConfig = {
@@ -131,13 +129,7 @@ export default function App() {
     }
   };
 
-  const signOutUser = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
+
 
   return (
     <html lang="ja">
@@ -149,31 +141,7 @@ export default function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
             {user ? (
-              <>
-                <Box sx={{ 
-                  backgroundColor: 'primary.main', 
-                  color: 'primary.contrastText', 
-                  py: 2,
-                  mb: 2
-                }}>
-                  <Container>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="h6">
-                        Welcome {user.displayName}!
-                      </Typography>
-                      <Button 
-                        color="inherit" 
-                        variant="outlined" 
-                        onClick={signOutUser}
-                        sx={{ borderColor: 'white', color: 'white' }}
-                      >
-                        ログアウト
-                      </Button>
-                    </Box>
-                  </Container>
-                </Box>
-                <Outlet />
-              </>
+              <Outlet />
             ) : (
               <Container maxWidth="sm" sx={{ 
                 display: 'flex', 
@@ -183,12 +151,6 @@ export default function App() {
                 minHeight: '100vh',
                 textAlign: 'center'
               }}>
-                <Typography variant="h4" gutterBottom>
-                  草通り越して林!
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                  ログインしてね
-                </Typography>
                 <Button 
                   variant="contained" 
                   onClick={signInWithGoogle}
