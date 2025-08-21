@@ -126,7 +126,7 @@ export const theme = createTheme({
       xl: 1920,
     },
   },
-  spacing: 8, // 8px基準のスペーシング
+  spacing: 0.5, // 0.5rem基準のスペーシング
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -147,22 +147,22 @@ export const theme = createTheme({
           // モバイルでのスクロールバー非表示
           scrollbarWidth: 'thin',
           '&::-webkit-scrollbar': {
-            width: '4px',
+            width: '0.25rem',
           },
           '&::-webkit-scrollbar-track': {
             background: 'transparent',
           },
           '&::-webkit-scrollbar-thumb': {
             background: 'rgba(0,0,0,0.2)',
-            borderRadius: '2px',
+            borderRadius: '0.125rem',
           },
         },
         '*': {
           boxSizing: 'border-box',
         },
-        // モバイルでの拡大縮小を防ぐ（16px以上でズーム防止）
+        // モバイルでの拡大縮小を防ぐ（1rem以上でズーム防止）
         'input, textarea, select': {
-          fontSize: '16px !important',
+          fontSize: '1rem !important',
           fontFamily: 'inherit',
           maxWidth: '100%',
           width: '100%',
@@ -171,8 +171,8 @@ export const theme = createTheme({
         },
         // フォーカス時のアウトライン改善
         'button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible': {
-          outline: '2px solid #1976d2',
-          outlineOffset: '2px',
+          outline: '0.125rem solid #1976d2',
+          outlineOffset: '0.125rem',
         },
       },
     },
@@ -183,9 +183,9 @@ export const theme = createTheme({
           borderRadius: '12px',
           fontWeight: 600,
           // モバイルでのタッチ操作最適化
-          minHeight: '48px',
-          minWidth: '48px',
-          padding: '12px 24px',
+          minHeight: '3rem',
+          minWidth: '3rem',
+          padding: '0.75rem 1.5rem',
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           // タッチデバイスでのhover無効化
           '@media (hover: none)': {
@@ -199,13 +199,13 @@ export const theme = createTheme({
           },
         },
         sizeSmall: {
-          minHeight: '40px',
-          padding: '8px 16px',
+          minHeight: '2.5rem',
+          padding: '0.5rem 1rem',
           fontSize: '0.8125rem',
         },
         sizeLarge: {
-          minHeight: '56px',
-          padding: '16px 32px',
+          minHeight: '3.5rem',
+          padding: '1rem 2rem',
           fontSize: '1rem',
         },
       },
@@ -213,11 +213,11 @@ export const theme = createTheme({
     MuiContainer: {
       styleOverrides: {
         root: {
-          paddingLeft: '16px',
-          paddingRight: '16px',
-          '@media (min-width:600px)': {
-            paddingLeft: '24px',
-            paddingRight: '24px',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          '@media (min-width:37.5rem)': {
+            paddingLeft: '1.5rem',
+            paddingRight: '1.5rem',
           },
         },
       },
@@ -225,11 +225,11 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: '16px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          '@media (max-width:600px)': {
-            borderRadius: '12px',
-            margin: '0 8px',
+          borderRadius: '1rem',
+          boxShadow: '0 0.125rem 0.5rem rgba(0,0,0,0.08)',
+          '@media (max-width:37.5rem)': {
+            borderRadius: '0.75rem',
+            margin: '0 0.5rem',
           },
         },
       },
@@ -238,10 +238,10 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: '12px',
-            fontSize: '16px', // ズーム防止
-            '@media (max-width:600px)': {
-              borderRadius: '8px',
+            borderRadius: '0.75rem',
+            fontSize: '1rem', // ズーム防止
+            '@media (max-width:37.5rem)': {
+              borderRadius: '0.5rem',
             },
           },
         },
@@ -251,7 +251,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: '#1976d2',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          boxShadow: '0 0.125rem 0.5rem rgba(0,0,0,0.12)',
         },
       },
     },
@@ -259,9 +259,9 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           // モバイルでのFABサイズ調整
-          '@media (max-width:600px)': {
-            width: '64px',
-            height: '64px',
+          '@media (max-width:37.5rem)': {
+            width: '4rem',
+            height: '4rem',
           },
         },
       },

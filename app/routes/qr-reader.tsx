@@ -242,14 +242,14 @@ export default function QRReader() {
         .qr-header {
           background: linear-gradient(135deg, #388e3c, #2e7d32);
           color: white;
-          padding: 12px 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          margin-bottom: 16px;
+          padding: 0.75rem 1rem;
+          box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
+          margin-bottom: 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .qr-header {
-            padding: 16px 24px;
-            margin-bottom: 24px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
           }
         }
         .qr-nav {
@@ -257,41 +257,41 @@ export default function QRReader() {
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: 8px;
+          gap: 0.5rem;
         }
         .qr-title {
-          font-size: 18px;
+          font-size: 1.125rem;
           font-weight: 600;
           margin: 0;
           flex: 1;
           min-width: 0;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .qr-title {
-            font-size: 24px;
+            font-size: 1.5rem;
           }
         }
         .back-btn {
           background: transparent;
-          border: 2px solid white;
+          border: 0.125rem solid white;
           color: white;
-          padding: 6px 12px;
-          border-radius: 8px;
+          padding: 0.375rem 0.75rem;
+          border-radius: 0.5rem;
           cursor: pointer;
-          font-size: 12px;
+          font-size: 0.75rem;
           font-weight: 500;
           transition: all 0.2s;
           display: flex;
           align-items: center;
-          gap: 4px;
-          min-height: 36px;
+          gap: 0.25rem;
+          min-height: 2.25rem;
           touch-action: manipulation;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .back-btn {
-            padding: 8px 16px;
-            font-size: 14px;
-            gap: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            gap: 0.5rem;
           }
         }
         .back-btn:hover {
@@ -299,40 +299,40 @@ export default function QRReader() {
           color: #388e3c;
         }
         .camera-container {
-          max-width: 600px;
+          max-width: 37.5rem;
           margin: 0 auto;
-          padding: 0 16px;
+          padding: 0 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .camera-container {
-            padding: 0 24px;
+            padding: 0 1.5rem;
           }
         }
         .camera-card {
           background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+          border-radius: 0.75rem;
+          box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.1);
           overflow: hidden;
-          margin-bottom: 16px;
+          margin-bottom: 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .camera-card {
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
           }
         }
         #qr-reader-container {
-          min-height: 280px;
+          min-height: 17.5rem;
           width: 100%;
           background: #f8f9fa;
-          border-radius: 12px;
+          border-radius: 0.75rem;
           overflow: hidden;
           position: relative;
         }
         
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           #qr-reader-container {
-            min-height: 400px;
-            border-radius: 16px;
+            min-height: 25rem;
+            border-radius: 1rem;
           }
         }
         
@@ -357,44 +357,44 @@ export default function QRReader() {
         #qr-reader-container button {
           background: linear-gradient(135deg, #1976d2, #1565c0) !important;
           border: none !important;
-          border-radius: 12px !important;
+          border-radius: 0.75rem !important;
           color: white !important;
           font-weight: 600 !important;
-          padding: 12px 20px !important;
-          margin: 8px 4px !important;
+          padding: 0.75rem 1.25rem !important;
+          margin: 0.5rem 0.25rem !important;
           transition: all 0.2s ease !important;
-          min-height: 44px !important;
+          min-height: 2.75rem !important;
         }
         
         #qr-reader-container button:hover {
-          transform: translateY(-1px) !important;
-          box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+          transform: translateY(-0.0625rem) !important;
+          box-shadow: 0 0.25rem 0.75rem rgba(25, 118, 210, 0.3) !important;
         }
         .camera-controls {
-          padding: 16px;
+          padding: 1rem;
           text-align: center;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .camera-controls {
-            padding: 24px;
+            padding: 1.5rem;
           }
         }
         .control-btn {
-          padding: 12px 24px;
+          padding: 0.75rem 1.5rem;
           border: none;
-          border-radius: 8px;
+          border-radius: 0.5rem;
           cursor: pointer;
-          font-size: 16px;
+          font-size: 1rem;
           font-weight: 600;
-          margin: 4px;
+          margin: 0.25rem;
           transition: all 0.2s;
-          min-height: 48px;
+          min-height: 3rem;
           touch-action: manipulation;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .control-btn {
-            padding: 16px 32px;
-            margin: 0 8px;
+            padding: 1rem 2rem;
+            margin: 0 0.5rem;
           }
         }
         .stop-btn {
@@ -406,36 +406,36 @@ export default function QRReader() {
         }
         .error-card {
           background: #ffebee;
-          border: 1px solid #ef5350;
-          border-radius: 8px;
-          padding: 16px;
-          margin-bottom: 24px;
+          border: 0.0625rem solid #ef5350;
+          border-radius: 0.5rem;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
           color: #c62828;
         }
         .info-card {
           background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-          padding: 16px;
-          margin-bottom: 16px;
+          border-radius: 0.75rem;
+          box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.1);
+          padding: 1rem;
+          margin-bottom: 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .info-card {
-            padding: 24px;
-            margin-bottom: 24px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
           }
         }
         .result-card {
           background: white;
-          border-radius: 12px;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-          margin-bottom: 16px;
+          border-radius: 0.75rem;
+          box-shadow: 0 0.375rem 1.25rem rgba(0,0,0,0.15);
+          margin-bottom: 1rem;
           overflow: hidden;
-          border-left: 6px solid #2e7d32;
+          border-left: 0.375rem solid #2e7d32;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .result-card {
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
           }
         }
         .result-card.error {
@@ -443,20 +443,20 @@ export default function QRReader() {
         }
         .result-header {
           background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-          padding: 16px;
-          border-bottom: 1px solid #e0e0e0;
+          padding: 1rem;
+          border-bottom: 0.0625rem solid #e0e0e0;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .result-header {
-            padding: 24px;
+            padding: 1.5rem;
           }
         }
         .result-content {
-          padding: 16px;
+          padding: 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .result-content {
-            padding: 24px;
+            padding: 1.5rem;
           }
         }
         .overlay {
@@ -470,18 +470,18 @@ export default function QRReader() {
           align-items: center;
           justify-content: center;
           z-index: 1000;
-          padding: 16px;
+          padding: 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .overlay {
-            padding: 24px;
+            padding: 1.5rem;
           }
         }
         .overlay-content {
           background: white;
-          border-radius: 16px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-          max-width: 500px;
+          border-radius: 1rem;
+          box-shadow: 0 0.625rem 1.875rem rgba(0,0,0,0.3);
+          max-width: 31.25rem;
           width: 100%;
           max-height: 80vh;
           overflow-y: auto;
@@ -491,7 +491,7 @@ export default function QRReader() {
         @keyframes slideIn {
           from {
             opacity: 0;
-            transform: translateY(-50px) scale(0.9);
+            transform: translateY(-3.125rem) scale(0.9);
           }
           to {
             opacity: 1;
@@ -499,32 +499,32 @@ export default function QRReader() {
           }
         }
         .overlay-header {
-          padding: 16px 16px 12px 16px;
-          border-bottom: 1px solid #e0e0e0;
+          padding: 1rem 1rem 0.75rem 1rem;
+          border-bottom: 0.0625rem solid #e0e0e0;
           position: relative;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .overlay-header {
-            padding: 24px 24px 16px 24px;
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
           }
         }
         .overlay-body {
-          padding: 16px;
+          padding: 1rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .overlay-body {
-            padding: 24px;
+            padding: 1.5rem;
           }
         }
         .scanning-indicator {
           text-align: center;
-          padding: 16px 20px;
+          padding: 1rem 1.25rem;
           background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-          border-radius: 16px;
-          margin-bottom: 16px;
+          border-radius: 1rem;
+          margin-bottom: 1rem;
           color: #1b5e20;
           font-weight: 600;
-          box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+          box-shadow: 0 0.125rem 0.5rem rgba(76, 175, 80, 0.15);
           position: relative;
           overflow: hidden;
         }
@@ -545,10 +545,10 @@ export default function QRReader() {
           100% { left: 100%; }
         }
         
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .scanning-indicator {
-            border-radius: 12px;
-            padding: 18px 24px;
+            border-radius: 0.75rem;
+            padding: 1.125rem 1.5rem;
           }
         }
       `}</style>

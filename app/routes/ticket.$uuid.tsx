@@ -84,7 +84,8 @@ export default function Ticket() {
                   }
                 }
                 if (foundTicketData) break;
-              } catch (_subCollectionError) {
+              } catch (error) {
+          console.warn('Subcollection access failed:', error);
                 // サブコレクションが存在しない場合は無視
                 console.log(`📋 No tickets subcollection in ${collectionName}/${docSnapshot.id}`);
               }
@@ -258,7 +259,8 @@ export default function Ticket() {
               console.log(`✅ Found collection: ${collectionName} (${snapshot.docs.length} documents)`);
               discoveredCollections.push(collectionName);
             }
-          } catch (_error) {
+          } catch (error) {
+          console.warn('Operation failed:', error);
             // 存在しないコレクションは無視
           }
         }
@@ -279,7 +281,8 @@ export default function Ticket() {
             console.log(`✅ Found additional collection: ${pattern} (${snapshot.docs.length} documents)`);
             discoveredCollections.push(pattern);
           }
-        } catch (_error) {
+        } catch (error) {
+          console.warn('Operation failed:', error);
           // 存在しないコレクションは無視
         }
       }
@@ -331,7 +334,8 @@ export default function Ticket() {
               // パフォーマンスのため、いくつか見つかったら停止
               if (discoveredCollections.length >= 10) break;
             }
-          } catch (_error) {
+          } catch (error) {
+          console.warn('Operation failed:', error);
             // 存在しないコレクションは無視
           }
         }
@@ -357,47 +361,47 @@ export default function Ticket() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: '24px'
+      padding: '1.5rem'
     }}>
       <style>{`
         .ticket-container {
           background: white;
-          border-radius: 16px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-          padding: 40px;
-          max-width: 500px;
+          border-radius: 1rem;
+          box-shadow: 0 0.5rem 2rem rgba(0,0,0,0.1);
+          padding: 2.5rem;
+          max-width: 31.25rem;
           width: 100%;
           text-align: center;
         }
         .status-icon {
-          font-size: 80px;
-          margin-bottom: 24px;
+          font-size: 5rem;
+          margin-bottom: 1.5rem;
           display: block;
         }
         .status-title {
-          font-size: 28px;
+          font-size: 1.75rem;
           font-weight: 600;
-          margin: 0 0 16px 0;
+          margin: 0 0 1rem 0;
           color: #333;
         }
         .status-message {
-          font-size: 16px;
+          font-size: 1rem;
           color: #666;
           line-height: 1.6;
-          margin-bottom: 32px;
+          margin-bottom: 2rem;
         }
         .ticket-info {
           background: #f8f9fa;
-          border-radius: 12px;
-          padding: 20px;
-          margin-bottom: 24px;
-          border-left: 4px solid #1976d2;
+          border-radius: 0.75rem;
+          padding: 1.25rem;
+          margin-bottom: 1.5rem;
+          border-left: 0.25rem solid #1976d2;
         }
         .ticket-info-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 8px;
+          margin-bottom: 0.5rem;
         }
         .ticket-info-row:last-child {
           margin-bottom: 0;
@@ -405,22 +409,22 @@ export default function Ticket() {
         .ticket-info-label {
           font-weight: 600;
           color: #333;
-          font-size: 14px;
+          font-size: 0.875rem;
         }
         .ticket-info-value {
           color: #666;
-          font-size: 14px;
+          font-size: 0.875rem;
         }
         .action-buttons {
           display: flex;
-          gap: 12px;
+          gap: 0.75rem;
           justify-content: center;
         }
         .btn {
-          padding: 12px 24px;
-          border-radius: 8px;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.5rem;
           border: none;
-          font-size: 16px;
+          font-size: 1rem;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s;
@@ -437,25 +441,25 @@ export default function Ticket() {
         .btn-secondary {
           background: #f5f5f5;
           color: #333;
-          border: 2px solid #e0e0e0;
+          border: 0.125rem solid #e0e0e0;
         }
         .btn-secondary:hover {
           background: #e0e0e0;
         }
         .countdown-text {
-          font-size: 14px;
+          font-size: 0.875rem;
           color: #666;
-          margin-top: 16px;
+          margin-top: 1rem;
         }
         .debug-toggle-btn {
           background: #ff9800;
           color: white;
           border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
           cursor: pointer;
-          font-size: 14px;
-          margin: 16px 0;
+          font-size: 0.875rem;
+          margin: 1rem 0;
           transition: all 0.2s;
         }
         .debug-toggle-btn:hover {
@@ -463,14 +467,14 @@ export default function Ticket() {
         }
         .debug-info-panel {
           background: #f8f9fa;
-          border: 2px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 16px;
-          margin-top: 16px;
+          border: 0.125rem solid #e0e0e0;
+          border-radius: 0.5rem;
+          padding: 1rem;
+          margin-top: 1rem;
           font-family: 'Courier New', monospace;
-          font-size: 12px;
+          font-size: 0.75rem;
           line-height: 1.4;
-          max-height: 300px;
+          max-height: 18.75rem;
           overflow-y: auto;
           white-space: pre-line;
           text-align: left;
@@ -479,20 +483,20 @@ export default function Ticket() {
           background: #666;
           color: white;
           border: none;
-          padding: 6px 12px;
-          border-radius: 4px;
+          padding: 0.375rem 0.75rem;
+          border-radius: 0.25rem;
           cursor: pointer;
-          font-size: 12px;
-          margin-top: 8px;
+          font-size: 0.75rem;
+          margin-top: 0.5rem;
         }
         .loading-spinner {
-          width: 40px;
-          height: 40px;
-          border: 4px solid #e0e0e0;
-          border-top: 4px solid #1976d2;
+          width: 2.5rem;
+          height: 2.5rem;
+          border: 0.25rem solid #e0e0e0;
+          border-top: 0.25rem solid #1976d2;
           border-radius: 50%;
           animation: spin 1s linear infinite;
-          margin: 0 auto 24px;
+          margin: 0 auto 1.5rem;
         }
         @keyframes spin {
           0% { transform: rotate(0deg); }

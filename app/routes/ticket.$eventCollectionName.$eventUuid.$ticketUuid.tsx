@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "@remix-run/react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../root";
@@ -10,7 +10,7 @@ interface TicketData {
   createdBy: string;
   status: "未" | "済";
   state?: "未" | "済"; // 既存データとの互換性のため一時的に保持
-  createdAt: any;
+  createdAt: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export default function NewFormatTicketPage() {
@@ -22,17 +22,7 @@ export default function NewFormatTicketPage() {
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState<string>("");
 
-  useEffect(() => {
-    if (!eventCollectionName || !eventUuid || !ticketUuid) {
-      setError("無効なURL形式です。");
-      setLoading(false);
-      return;
-    }
-
-    fetchAndUpdateTicket();
-  }, [eventCollectionName, eventUuid, ticketUuid]);
-
-  const fetchAndUpdateTicket = async () => {
+  const fetchAndUpdateTicket = useCallback(async () => {
     if (!eventCollectionName || !eventUuid || !ticketUuid) return;
 
     try {
@@ -88,7 +78,17 @@ export default function NewFormatTicketPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventCollectionName, eventUuid, ticketUuid, navigate]);
+
+  useEffect(() => {
+    if (!eventCollectionName || !eventUuid || !ticketUuid) {
+      setError("無効なURL形式です。");
+      setLoading(false);
+      return;
+    }
+
+    fetchAndUpdateTicket();
+  }, [eventCollectionName, eventUuid, ticketUuid, fetchAndUpdateTicket]);
 
   const handleReturnHome = () => {
     navigate("/");
@@ -106,24 +106,24 @@ export default function NewFormatTicketPage() {
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '20px',
+          borderRadius: '1.25rem',
+          padding: '1.25rem',
           textAlign: 'center',
-          boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
-          maxWidth: '400px',
+          boxShadow: '0 1rem 2rem rgba(0,0,0,0.12)',
+          maxWidth: '25rem',
           width: '100%',
-          margin: '0 12px',
+          margin: '0 0.75rem',
           position: 'relative',
           overflow: 'hidden'
         }}>
           <div style={{
-            fontSize: '48px',
-            marginBottom: '20px',
+            fontSize: '3rem',
+            marginBottom: '1.25rem',
             animation: 'spin 2s linear infinite'
           }}>
             🎫
           </div>
-          <h2 style={{ color: '#333', marginBottom: '10px' }}>
+          <h2 style={{ color: '#333', marginBottom: '0.625rem' }}>
             チケット確認中...
           </h2>
           <p style={{ color: '#666', margin: 0 }}>
@@ -149,12 +149,12 @@ export default function NewFormatTicketPage() {
         alignItems: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-        padding: '16px'
+        padding: '1rem'
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '24px',
+          borderRadius: '1.25rem',
+          padding: '1.5rem',
           textAlign: 'center',
           boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
           maxWidth: '500px',
@@ -164,24 +164,24 @@ export default function NewFormatTicketPage() {
           overflow: 'hidden'
         }}>
           <div style={{
-            fontSize: '48px',
-            marginBottom: '16px',
+            fontSize: '3rem',
+            marginBottom: '1rem',
             color: '#4CAF50'
           }}>
             ✅
           </div>
           <h1 style={{
             color: '#4CAF50',
-            marginBottom: '16px',
-            fontSize: '24px'
+            marginBottom: '1rem',
+            fontSize: '1.5rem'
           }}>
             入場完了！
           </h1>
           <div style={{
             background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-            borderRadius: '16px',
-            padding: '20px',
-            marginBottom: '20px',
+            borderRadius: '1rem',
+            padding: '1.25rem',
+            marginBottom: '1.25rem',
             position: 'relative',
             border: '2px solid #e1e5e9'
           }}>
@@ -191,54 +191,54 @@ export default function NewFormatTicketPage() {
               right: '8px',
               background: '#4CAF50',
               color: 'white',
-              borderRadius: '20px',
-              padding: '4px 12px',
-              fontSize: '12px',
+              borderRadius: '1.25rem',
+              padding: '0.25rem 0.75rem',
+              fontSize: '0.75rem',
               fontWeight: '600'
             }}>
               入場済み
             </div>
             <h3 style={{ 
               color: '#212121', 
-              marginBottom: '12px', 
-              fontSize: '20px',
+              marginBottom: '0.75rem', 
+              fontSize: '1.25rem',
               fontWeight: '700',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '0.5rem'
             }}>
               👤 {ticketData.name}さん
             </h3>
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '8px',
+              gap: '0.5rem',
               textAlign: 'left'
             }}>
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
+                gap: '0.5rem',
+                padding: '0.5rem 0.75rem',
                 background: 'rgba(255,255,255,0.7)',
-                borderRadius: '12px'
+                borderRadius: '0.75rem'
               }}>
-                <span style={{ fontSize: '16px' }}>🎸</span>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#1976d2' }}>
+                <span style={{ fontSize: '1rem' }}>🎸</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1976d2' }}>
                   {ticketData.bandName}
                 </span>
               </div>
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
+                gap: '0.5rem',
+                padding: '0.5rem 0.75rem',
                 background: 'rgba(255,255,255,0.7)',
-                borderRadius: '12px'
+                borderRadius: '0.75rem'
               }}>
-                <span style={{ fontSize: '16px' }}>🎫</span>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#757575' }}>
+                <span style={{ fontSize: '1rem' }}>🎫</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#757575' }}>
                   {eventCollectionName}
                 </span>
               </div>
@@ -246,9 +246,9 @@ export default function NewFormatTicketPage() {
           </div>
           <p style={{
             color: '#666',
-            marginBottom: '20px',
+            marginBottom: '1.25rem',
             lineHeight: '1.6',
-            fontSize: '14px'
+            fontSize: '0.875rem'
           }}>
             {message}
             <br />
@@ -260,13 +260,13 @@ export default function NewFormatTicketPage() {
               background: 'linear-gradient(135deg, #4CAF50, #2e7d32)',
               color: 'white',
               border: 'none',
-              padding: '16px 32px',
-              borderRadius: '30px',
-              fontSize: '16px',
+              padding: '1rem 2rem',
+              borderRadius: '1.875rem',
+              fontSize: '1rem',
               cursor: 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               fontWeight: '700',
-              minHeight: '56px',
+              minHeight: '3.5rem',
               touchAction: 'manipulation',
               boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)',
               position: 'relative',
@@ -297,12 +297,12 @@ export default function NewFormatTicketPage() {
         alignItems: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-        padding: '16px'
+        padding: '1rem'
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '24px',
+          borderRadius: '1.25rem',
+          padding: '1.5rem',
           textAlign: 'center',
           boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
           maxWidth: '500px',
@@ -312,24 +312,24 @@ export default function NewFormatTicketPage() {
           overflow: 'hidden'
         }}>
           <div style={{
-            fontSize: '48px',
-            marginBottom: '16px',
+            fontSize: '3rem',
+            marginBottom: '1rem',
             color: '#f44336'
           }}>
             ❌
           </div>
           <h1 style={{
             color: '#f44336',
-            marginBottom: '16px',
-            fontSize: '24px'
+            marginBottom: '1rem',
+            fontSize: '1.5rem'
           }}>
             エラーが発生しました
           </h1>
           <div style={{
             background: '#ffebee',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px'
+            borderRadius: '0.75rem',
+            padding: '1.25rem',
+            marginBottom: '1.25rem'
           }}>
             <p style={{ color: '#c62828', margin: 0, fontWeight: '500' }}>
               {error}
@@ -337,34 +337,34 @@ export default function NewFormatTicketPage() {
           </div>
           <div style={{
             background: '#f8f9fa',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px',
+            borderRadius: '0.75rem',
+            padding: '1.25rem',
+            marginBottom: '1.25rem',
             textAlign: 'left'
           }}>
-            <h4 style={{ color: '#333', marginBottom: '10px' }}>📋 Firestore パス情報:</h4>
-            <p style={{ color: '#666', margin: '5px 0', fontSize: '14px' }}>
+            <h4 style={{ color: '#333', marginBottom: '0.625rem' }}>📋 Firestore パス情報:</h4>
+            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
               コレクション: {eventCollectionName}
             </p>
-            <p style={{ color: '#666', margin: '5px 0', fontSize: '14px' }}>
+            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
               イベントUUID: {eventUuid}
             </p>
-            <p style={{ color: '#666', margin: '5px 0', fontSize: '14px' }}>
+            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
               チケットUUID: {ticketUuid}
             </p>
-            <p style={{ color: '#666', margin: '5px 0', fontSize: '14px' }}>
+            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
               完全パス: {eventCollectionName}/{eventUuid}/tickets/{ticketUuid}
             </p>
           </div>
           <div style={{
             background: '#fff3e0',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '30px',
+            borderRadius: '0.75rem',
+            padding: '1.25rem',
+            marginBottom: '1.875rem',
             textAlign: 'left'
           }}>
-            <h4 style={{ color: '#ef6c00', marginBottom: '10px' }}>💡 推奨対策:</h4>
-            <ul style={{ color: '#bf360c', margin: 0, paddingLeft: '20px', fontSize: '14px' }}>
+            <h4 style={{ color: '#ef6c00', marginBottom: '0.625rem' }}>💡 推奨対策:</h4>
+            <ul style={{ color: '#bf360c', margin: 0, paddingLeft: '1.25rem', fontSize: '0.875rem' }}>
               <li>admin.tsx画面でチケットが正しく作成されているか確認</li>
               <li>owner.tsx画面でイベントが存在するか確認</li>
               <li>Firestoreでコレクション「{eventCollectionName}」が存在するか確認</li>
@@ -377,13 +377,13 @@ export default function NewFormatTicketPage() {
               background: 'linear-gradient(135deg, #757575, #616161)',
               color: 'white',
               border: 'none',
-              padding: '16px 32px',
-              borderRadius: '30px',
-              fontSize: '16px',
+              padding: '1rem 2rem',
+              borderRadius: '1.875rem',
+              fontSize: '1rem',
               cursor: 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               fontWeight: '700',
-              minHeight: '56px',
+              minHeight: '3.5rem',
               touchAction: 'manipulation',
               boxShadow: '0 4px 16px rgba(117, 117, 117, 0.3)',
               position: 'relative',

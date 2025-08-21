@@ -1293,9 +1293,9 @@ export default function OwnerDashboard() {
       return (
         <span 
           style={{
-            padding: "4px 12px",
-            borderRadius: "16px",
-            fontSize: "12px",
+            padding: "0.25rem 0.75rem",
+            borderRadius: "1rem",
+            fontSize: "0.75rem",
             fontWeight: "600",
             color: "white",
             backgroundColor: status === "済" ? "#4caf50" : "#ff9800",
@@ -1334,10 +1334,10 @@ export default function OwnerDashboard() {
         value={status}
         onChange={(e) => handleStatusChange(e.target.value as "未" | "済")}
         style={{
-          padding: "4px 8px",
-          borderRadius: "8px",
-          border: "2px solid #e0e0e0",
-          fontSize: "12px",
+          padding: "0.25rem 0.5rem",
+          borderRadius: "0.5rem",
+          border: "0.125rem solid #e0e0e0",
+          fontSize: "0.75rem",
           fontWeight: "600",
           backgroundColor: status === "済" ? "#4caf50" : "#ff9800",
           color: "white",
@@ -1352,9 +1352,9 @@ export default function OwnerDashboard() {
 
   return (
     <div style={{ 
-      maxWidth: "1200px", 
+      maxWidth: "75rem", 
       margin: "0 auto", 
-      padding: "24px",
+      padding: "1.5rem",
       fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
     }}>
       <style>{`
@@ -1366,12 +1366,12 @@ export default function OwnerDashboard() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 32px;
-          padding-bottom: 16px;
-          border-bottom: 2px solid #e0e0e0;
+          margin-bottom: 2rem;
+          padding-bottom: 1rem;
+          border-bottom: 0.125rem solid #e0e0e0;
         }
         .dashboard-title {
-          font-size: 32px;
+          font-size: 2rem;
           font-weight: 600;
           color: #333;
           margin: 0;
@@ -1380,10 +1380,10 @@ export default function OwnerDashboard() {
           background: #1976d2;
           color: white;
           border: none;
-          padding: 10px 20px;
-          border-radius: 8px;
+          padding: 0.625rem 1.25rem;
+          border-radius: 0.5rem;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 0.875rem;
           font-weight: 500;
           transition: background 0.2s;
         }
@@ -1396,43 +1396,43 @@ export default function OwnerDashboard() {
         }
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 16px;
-          margin-bottom: 24px;
+          grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+          gap: 1rem;
+          margin-bottom: 1.5rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .stats-grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(15.625rem, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
           }
         }
         .stat-card {
           background: white;
-          padding: 16px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          padding: 1rem;
+          border-radius: 0.75rem;
+          box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
           text-align: center;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .stat-card {
-            padding: 24px;
+            padding: 1.5rem;
           }
         }
         .stat-icon {
-          font-size: 36px;
-          margin-bottom: 8px;
+          font-size: 2.25rem;
+          margin-bottom: 0.5rem;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 37.5rem) {
           .stat-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
           }
         }
         .stat-number {
-          font-size: 28px;
+          font-size: 1.75rem;
           font-weight: 700;
-          margin: 6px 0;
+          margin: 0.375rem 0;
           color: #333;
         }
         @media (min-width: 600px) {
@@ -1448,12 +1448,12 @@ export default function OwnerDashboard() {
         .visitors-card {
           background: white;
           border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 0.125rem 8px rgba(0,0,0,0.1);
           overflow: hidden;
         }
         .visitors-header {
           padding: 24px;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 0.0625rem solid #e0e0e0;
         }
         .visitors-title {
           font-size: 20px;
@@ -1482,7 +1482,7 @@ export default function OwnerDashboard() {
           text-align: left;
           font-weight: 600;
           color: #333;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 0.0625rem solid #e0e0e0;
           font-size: 13px;
           min-width: 100px;
         }
@@ -1497,7 +1497,7 @@ export default function OwnerDashboard() {
         
         .visitors-table td {
           padding: 12px 8px;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 0.0625rem solid #f0f0f0;
           font-size: 13px;
           min-width: 100px;
         }
@@ -1588,7 +1588,7 @@ export default function OwnerDashboard() {
         }
         
         .fab-button:hover {
-          transform: translateY(-2px) scale(1.05);
+          transform: translateY(-0.125rem) scale(1.05);
           box-shadow: 0 8px 20px rgba(25, 118, 210, 0.4);
         }
         
@@ -1633,7 +1633,7 @@ export default function OwnerDashboard() {
         .form-input {
           width: 100%;
           padding: 16px 20px;
-          border: 2px solid #e1e5e9;
+          border: 0.125rem solid #e1e5e9;
           border-radius: 16px;
           font-size: 16px;
           background: #fafbfc;
@@ -1650,7 +1650,7 @@ export default function OwnerDashboard() {
           border-color: #1976d2;
           background: white;
           box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
-          transform: translateY(-1px);
+          transform: translateY(-0.0625rem);
         }
         
         .form-input::placeholder {
@@ -1699,13 +1699,13 @@ export default function OwnerDashboard() {
         }
         
         .btn-primary:hover {
-          transform: translateY(-2px);
+          transform: translateY(-0.125rem);
           box-shadow: 0 6px 16px rgba(25, 118, 210, 0.35);
         }
         
         .btn-primary:active {
           transform: translateY(0);
-          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+          box-shadow: 0 0.125rem 8px rgba(25, 118, 210, 0.2);
         }
         .loading-text {
           text-align: center;
@@ -1722,7 +1722,7 @@ export default function OwnerDashboard() {
           background: white;
           padding: 20px;
           border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 0.125rem 8px rgba(0,0,0,0.1);
           margin-bottom: 24px;
         }
         .filters-title {
@@ -1754,7 +1754,7 @@ export default function OwnerDashboard() {
         }
         .filter-input {
           padding: 8px 12px;
-          border: 2px solid #e0e0e0;
+          border: 0.125rem solid #e0e0e0;
           border-radius: 6px;
           font-size: 14px;
         }
@@ -1764,7 +1764,7 @@ export default function OwnerDashboard() {
         }
         .filter-select {
           padding: 8px 12px;
-          border: 2px solid #e0e0e0;
+          border: 0.125rem solid #e0e0e0;
           border-radius: 6px;
           font-size: 14px;
           background: white;
@@ -1777,7 +1777,7 @@ export default function OwnerDashboard() {
         .clear-filters-btn {
           background: #f5f5f5;
           color: #666;
-          border: 1px solid #ddd;
+          border: 0.0625rem solid #ddd;
           padding: 8px 16px;
           border-radius: 6px;
           cursor: pointer;
@@ -1796,7 +1796,7 @@ export default function OwnerDashboard() {
           background: white;
           padding: 16px;
           border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 0.125rem 8px rgba(0,0,0,0.1);
           margin-bottom: 24px;
         }
         .collection-selector-title {
@@ -1812,7 +1812,7 @@ export default function OwnerDashboard() {
         }
         .collection-tab {
           padding: 8px 16px;
-          border: 2px solid #e0e0e0;
+          border: 0.125rem solid #e0e0e0;
           border-radius: 20px;
           background: white;
           cursor: pointer;
@@ -2081,7 +2081,7 @@ export default function OwnerDashboard() {
                   top: "3px",
                   left: showOnlyMyDocuments ? "23px" : "3px",
                   transition: "left 0.2s",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                  boxShadow: "0 0.0625rem 3px rgba(0,0,0,0.3)"
                 }}
               />
             </button>
@@ -2342,7 +2342,7 @@ export default function OwnerDashboard() {
                     <div className="event-dates">
                       {eventWithTickets.eventData.dates && Array.isArray(eventWithTickets.eventData.dates) 
                         ? eventWithTickets.eventData.dates.map((date, index) => (
-                            <div key={index} style={{ fontSize: "11px", marginBottom: "2px" }}>
+                            <div key={index} style={{ fontSize: "11px", marginBottom: "0.125rem" }}>
                               {new Date(date).toLocaleString("ja-JP")}
                             </div>
                           ))
@@ -2541,7 +2541,7 @@ export default function OwnerDashboard() {
                       <div className="event-dates">
                         {document.dates && Array.isArray(document.dates) 
                           ? document.dates.map((date, index) => (
-                              <div key={index} style={{ fontSize: "11px", marginBottom: "2px" }}>
+                              <div key={index} style={{ fontSize: "11px", marginBottom: "0.125rem" }}>
                                 {new Date(date).toLocaleString("ja-JP")}
                               </div>
                             ))
@@ -2760,7 +2760,7 @@ export default function OwnerDashboard() {
                         top: "3px",
                         left: eventOneDrink ? "23px" : "3px",
                         transition: "left 0.2s",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                        boxShadow: "0 0.0625rem 3px rgba(0,0,0,0.3)"
                       }}
                     />
                   </button>
@@ -2866,7 +2866,7 @@ export default function OwnerDashboard() {
                         top: "3px",
                         left: editEventOneDrink ? "23px" : "3px",
                         transition: "left 0.2s",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                        boxShadow: "0 0.0625rem 3px rgba(0,0,0,0.3)"
                       }}
                     />
                   </button>
