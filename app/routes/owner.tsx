@@ -83,7 +83,10 @@ export default function OwnerDashboard() {
       // 基本コレクション
       const baseCollections = ["users", "events", "products"];
       
-      // Firestoreからユーザーのカスタムコレクション情報を取得
+      // ユーザーが作成したイベントコレクションを動的に検出
+      const userCreatedCollections: string[] = [];
+      
+      // 1. Firestoreから保存済みのコレクション一覧を取得
       let savedCollections: string[] = [];
       try {
         const userDocSnapshot = await getDocs(query(collection(db, "users"), where("uid", "==", auth.currentUser.uid)));
@@ -108,28 +111,80 @@ export default function OwnerDashboard() {
         savedCollections = [];
       }
       
-      const knownCollections = [...baseCollections, ...savedCollections];
+      // 2. 保存済みコレクション名でFirestoreに実際にデータがあるかチェック
+      for (const collectionName of savedCollections) {
+        try {
+          const snapshot = await getDocs(collection(db, collectionName));
+          if (!snapshot.empty) {
+            // このコレクション内に現在のユーザーが作成したドキュメントがあるかチェック
+            const userDocuments = snapshot.docs.filter(doc => {
+              const data = doc.data();
+              return data.createdBy === auth.currentUser?.uid;
+            });
+            
+            if (userDocuments.length > 0) {
+              userCreatedCollections.push(collectionName);
+            }
+          }
+        } catch (error) {
+          console.log(`Collection ${collectionName} check failed:`, error);
+        }
+      }
       
-      // 各コレクションが存在するかチェック
+      // 3. ユーザーが作成したすべてのコレクションを検出する
+      // グローバルなコレクション検出のため、共通のメタデータコレクションを活用
+      try {
+        // まず、グローバルなコレクション登録簿からユーザーのコレクションを取得
+        const globalCollectionsRef = collection(db, "global_collections");
+        const globalQuery = query(globalCollectionsRef, where("createdBy", "==", auth.currentUser.uid));
+        const globalSnapshot = await getDocs(globalQuery);
+        
+        globalSnapshot.forEach(doc => {
+          const data = doc.data();
+          const collectionName = data.collectionName;
+          if (collectionName && !userCreatedCollections.includes(collectionName)) {
+            userCreatedCollections.push(collectionName);
+          }
+        });
+      } catch (error) {
+        console.log("Global collections check failed:", error);
+      }
+      
+      // 4. 既知のパターンでコレクション名の推測検出も追加
+      // すべての検出されたコレクション名を統合
+      
+      // 実際に存在し、ユーザーのデータを含むコレクションのみを含める
+      const allKnownCollections = [...baseCollections, ...userCreatedCollections];
+      
+      // 各コレクションが存在し、アクセス可能かチェック
       const existingCollections = [];
-      for (const collectionName of knownCollections) {
+      for (const collectionName of allKnownCollections) {
         // ticketsコレクションは除外
         if (collectionName === "tickets") {
           continue;
         }
         
         try {
-          const snapshot = await getDocs(query(collection(db, collectionName)));
+          const snapshot = await getDocs(collection(db, collectionName));
           if (!snapshot.empty) {
             existingCollections.push(collectionName);
           }
-        } catch {
-          // コレクションが存在しない場合はエラーになるが、無視する
-          console.log(`Collection ${collectionName} does not exist or is empty`);
+        } catch (error) {
+          console.log(`Collection ${collectionName} does not exist or is not accessible:`, error);
         }
       }
       
-      setCollections(existingCollections.length > 0 ? existingCollections : ["users"]);
+      // 重複を排除
+      const uniqueCollections = [...new Set(existingCollections)];
+      
+      console.log("Detected collections for user:", {
+        uid: auth.currentUser.uid,
+        savedCollections,
+        userCreatedCollections,
+        finalCollections: uniqueCollections
+      });
+      
+      setCollections(uniqueCollections.length > 0 ? uniqueCollections : ["users"]);
     } catch (error) {
       console.error("Error fetching collections:", error);
       setCollections(["users"]); // フォールバック
@@ -544,6 +599,7 @@ export default function OwnerDashboard() {
           const customCollections = updatedCollections.filter(name => !baseCollections.includes(name));
           
           if (auth.currentUser) {
+            // 1. ユーザードキュメントに保存
             const userDocRef = doc(db, "users", auth.currentUser.uid);
             await setDoc(userDocRef, {
               uid: auth.currentUser.uid,
@@ -553,7 +609,20 @@ export default function OwnerDashboard() {
               lastLoginAt: Timestamp.now()
             }, { merge: true }); // mergeオプションで既存フィールドを保持
             
+            // 2. グローバルコレクション登録簿にも登録
+            const globalCollectionDocRef = doc(db, "global_collections", `${auth.currentUser.uid}_${collectionName}`);
+            await setDoc(globalCollectionDocRef, {
+              collectionName: collectionName,
+              createdBy: auth.currentUser.uid,
+              createdByEmail: auth.currentUser.email,
+              createdByName: auth.currentUser.displayName,
+              createdAt: Timestamp.now(),
+              eventTitle: eventTitle.trim(),
+              isActive: true
+            });
+            
             console.log("Custom collections saved to Firestore:", customCollections);
+            console.log("Collection registered globally:", collectionName);
           }
         } catch (error) {
           console.error("Error saving custom collections to Firestore:", error);
