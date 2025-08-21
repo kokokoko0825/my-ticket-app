@@ -1396,26 +1396,50 @@ export default function OwnerDashboard() {
         }
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 24px;
-          margin-bottom: 32px;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        @media (min-width: 600px) {
+          .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+          }
         }
         .stat-card {
           background: white;
-          padding: 24px;
+          padding: 16px;
           border-radius: 12px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
           text-align: center;
         }
+        @media (min-width: 600px) {
+          .stat-card {
+            padding: 24px;
+          }
+        }
         .stat-icon {
-          font-size: 48px;
-          margin-bottom: 12px;
+          font-size: 36px;
+          margin-bottom: 8px;
+        }
+        @media (min-width: 600px) {
+          .stat-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+          }
         }
         .stat-number {
-          font-size: 36px;
+          font-size: 28px;
           font-weight: 700;
-          margin: 8px 0;
+          margin: 6px 0;
           color: #333;
+        }
+        @media (min-width: 600px) {
+          .stat-number {
+            font-size: 36px;
+            margin: 8px 0;
+          }
         }
         .stat-label {
           color: #666;
@@ -1590,8 +1614,14 @@ export default function OwnerDashboard() {
         }
         .filters-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 16px;
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        @media (min-width: 600px) {
+          .filters-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+          }
         }
         .filter-group {
           display: flex;

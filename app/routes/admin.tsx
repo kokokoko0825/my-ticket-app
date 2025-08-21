@@ -371,45 +371,80 @@ export default function AdminPage() {
         .admin-header {
           background: #1976d2;
           color: white;
-          padding: 16px 24px;
+          padding: 12px 16px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 600px) {
+          .admin-header {
+            padding: 16px 24px;
+          }
         }
         .admin-nav {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
         }
         .back-btn {
           background: transparent;
           border: 2px solid white;
           color: white;
-          padding: 8px 16px;
+          padding: 6px 12px;
           border-radius: 8px;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 500;
           transition: all 0.2s;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 4px;
+          min-height: 36px;
+          touch-action: manipulation;
+        }
+        @media (min-width: 600px) {
+          .back-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            gap: 8px;
+          }
         }
         .back-btn:hover {
           background: white;
           color: #1976d2;
         }
         .admin-title {
-          font-size: 24px;
+          font-size: 18px;
           font-weight: 600;
           margin: 0;
+          flex: 1;
+          min-width: 0;
+        }
+        @media (min-width: 600px) {
+          .admin-title {
+            font-size: 24px;
+          }
         }
         .user-info {
-          font-size: 14px;
+          font-size: 12px;
           opacity: 0.9;
+          display: none;
+        }
+        @media (min-width: 480px) {
+          .user-info {
+            display: block;
+            font-size: 14px;
+          }
         }
         .content-wrapper {
           max-width: 1000px;
           margin: 0 auto;
-          padding: 32px 24px;
+          padding: 16px;
+        }
+        @media (min-width: 600px) {
+          .content-wrapper {
+            padding: 32px 24px;
+          }
         }
         .section-card {
           background: white;
@@ -434,8 +469,16 @@ export default function AdminPage() {
         }
         .form-row {
           display: flex;
-          gap: 16px;
-          align-items: end;
+          flex-direction: column;
+          gap: 12px;
+          align-items: stretch;
+        }
+        @media (min-width: 600px) {
+          .form-row {
+            flex-direction: row;
+            gap: 16px;
+            align-items: end;
+          }
         }
         .form-input {
           flex: 1;
@@ -445,6 +488,8 @@ export default function AdminPage() {
           font-size: 16px;
           transition: border-color 0.2s;
           font-family: inherit;
+          -webkit-appearance: none;
+          appearance: none;
         }
         .form-input:focus {
           outline: none;
@@ -461,6 +506,8 @@ export default function AdminPage() {
           font-weight: 500;
           transition: background 0.2s;
           min-width: 120px;
+          min-height: 48px;
+          touch-action: manipulation;
         }
         .create-btn:hover {
           background: #1565c0;

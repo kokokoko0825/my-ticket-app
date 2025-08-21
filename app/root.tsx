@@ -44,7 +44,7 @@ if (!getApps().length) {
 export const db = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
 
-// MUIテーマの作成
+// MUIテーマの作成（レスポンシブ対応強化）
 export const theme = createTheme({
   palette: {
     mode: 'light',
@@ -57,6 +57,37 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    // レスポンシブなフォントサイズ
+    h1: {
+      fontSize: '2rem',
+      '@media (min-width:600px)': {
+        fontSize: '2.5rem',
+      },
+      '@media (min-width:960px)': {
+        fontSize: '3rem',
+      },
+    },
+    h2: {
+      fontSize: '1.5rem',
+      '@media (min-width:600px)': {
+        fontSize: '2rem',
+      },
+    },
+    body1: {
+      fontSize: '0.875rem',
+      '@media (min-width:600px)': {
+        fontSize: '1rem',
+      },
+    },
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1920,
+    },
   },
   components: {
     MuiCssBaseline: {
@@ -65,7 +96,19 @@ export const theme = createTheme({
           fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
           margin: 0,
           padding: 0,
-          backgroundColor: '#f5f5f5', // デバッグ用：Material UIが適用されているかわかりやすくする
+          backgroundColor: '#f5f5f5',
+          // タッチデバイスでのスクロール改善
+          '-webkit-overflow-scrolling': 'touch',
+          // モバイルでのタップハイライト色を調整
+          '-webkit-tap-highlight-color': 'rgba(0, 0, 0, 0.1)',
+        },
+        '*': {
+          // ボックスサイジングをborder-boxに統一
+          boxSizing: 'border-box',
+        },
+        // モバイルでの拡大縮小を防ぐ
+        'input, textarea, select': {
+          fontSize: '16px !important',
         },
       },
     },
@@ -73,14 +116,34 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: '8px', // デバッグ用：Material UIボタンスタイルが適用されているか確認
+          borderRadius: '8px',
+          // モバイルでのタッチ操作を改善
+          minHeight: '44px',
+          minWidth: '44px',
+          '@media (hover: none)': {
+            '&:hover': {
+              backgroundColor: 'inherit',
+            },
+          },
+        },
+      },
+    },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          paddingLeft: '16px',
+          paddingRight: '16px',
+          '@media (min-width:600px)': {
+            paddingLeft: '24px',
+            paddingRight: '24px',
+          },
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#1976d2', // 明示的にAppBarの色を設定
+          backgroundColor: '#1976d2',
         },
       },
     },
@@ -91,7 +154,11 @@ export const meta: MetaFunction = () => {
   return[
     { charset: "utf-8" },
     { title: "電子チケット" },
-    { viewport: "width=device-width,initial-scale=1"},
+    { name: "viewport", content: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" },
+    { name: "apple-mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+    { name: "theme-color", content: "#1976d2" },
+    { name: "msapplication-TileColor", content: "#1976d2" },
   ]
 }
 

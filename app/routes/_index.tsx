@@ -59,47 +59,75 @@ export default function Index() {
       <style>{`
 
         .main-title {
-          font-size: 32px;
+          font-size: 24px;
           font-weight: 600;
           color: #333;
           text-align: center;
-          margin: 0 0 40px 0;
+          margin: 0 0 24px 0;
+        }
+        @media (min-width: 600px) {
+          .main-title {
+            font-size: 32px;
+            margin: 0 0 40px 0;
+          }
         }
         .section-card {
           background: white;
           border-radius: 12px;
           box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-          margin-bottom: 32px;
+          margin-bottom: 24px;
           overflow: hidden;
+        }
+        @media (min-width: 600px) {
+          .section-card {
+            margin-bottom: 32px;
+          }
         }
         .section-header {
           background: linear-gradient(135deg, #1976d2, #1565c0);
           color: white;
-          padding: 20px 24px;
+          padding: 16px 20px;
+        }
+        @media (min-width: 600px) {
+          .section-header {
+            padding: 20px 24px;
+          }
         }
         .section-header.secondary {
           background: linear-gradient(135deg, #dc004e, #b8003d);
         }
         .section-title {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 600;
           margin: 0;
         }
+        @media (min-width: 600px) {
+          .section-title {
+            font-size: 20px;
+          }
+        }
         .section-content {
-          padding: 24px;
+          padding: 20px;
+        }
+        @media (min-width: 600px) {
+          .section-content {
+            padding: 24px;
+          }
         }
         .form-group {
           margin-bottom: 20px;
         }
         .form-input {
           width: 100%;
-          padding: 16px;
+          padding: 14px 16px;
           border: 2px solid #e0e0e0;
           border-radius: 8px;
           font-size: 16px;
           font-family: inherit;
           transition: border-color 0.2s;
           box-sizing: border-box;
+          -webkit-appearance: none;
+          appearance: none;
         }
         .form-input:focus {
           outline: none;
@@ -110,31 +138,55 @@ export default function Index() {
           background: #1976d2;
           color: white;
           border: none;
-          padding: 16px 24px;
+          padding: 14px 20px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 16px;
           font-weight: 600;
           transition: background 0.2s;
           margin-bottom: 12px;
+          min-height: 48px;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+        @media (min-width: 600px) {
+          .primary-btn {
+            padding: 16px 24px;
+          }
         }
         .primary-btn:hover {
           background: #1565c0;
+        }
+        .primary-btn:active {
+          background: #1565c0;
+          transform: translateY(1px);
         }
         .secondary-btn {
           width: 100%;
           background: #dc004e;
           color: white;
           border: none;
-          padding: 16px 24px;
+          padding: 14px 20px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 16px;
           font-weight: 600;
           transition: background 0.2s;
+          min-height: 48px;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+        @media (min-width: 600px) {
+          .secondary-btn {
+            padding: 16px 24px;
+          }
         }
         .secondary-btn:hover {
           background: #b8003d;
+        }
+        .secondary-btn:active {
+          background: #b8003d;
+          transform: translateY(1px);
         }
         .form-note {
           font-size: 14px;
@@ -152,37 +204,67 @@ export default function Index() {
         .index-header {
           background: #1976d2;
           color: white;
-          padding: 16px 24px;
+          padding: 12px 16px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          margin-bottom: 24px;
+          margin-bottom: 16px;
+        }
+        @media (min-width: 600px) {
+          .index-header {
+            padding: 16px 24px;
+            margin-bottom: 24px;
+          }
         }
         .index-nav {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
         }
         .index-title {
-          font-size: 24px;
+          font-size: 18px;
           font-weight: 600;
           margin: 0;
+          flex: 1;
+          min-width: 0;
+        }
+        @media (min-width: 600px) {
+          .index-title {
+            font-size: 24px;
+          }
         }
         .user-info {
-          font-size: 14px;
+          font-size: 12px;
           opacity: 0.9;
+          display: none;
+        }
+        @media (min-width: 480px) {
+          .user-info {
+            display: block;
+            font-size: 14px;
+          }
         }
         .header-btn {
           background: transparent;
           border: 2px solid white;
           color: white;
-          padding: 8px 16px;
+          padding: 6px 12px;
           border-radius: 8px;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 500;
           transition: all 0.2s;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 4px;
+          min-height: 36px;
+        }
+        @media (min-width: 600px) {
+          .header-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            gap: 8px;
+          }
         }
         .header-btn:hover {
           background: white;
@@ -191,7 +273,12 @@ export default function Index() {
         .content-wrapper {
           max-width: 800px;
           margin: 0 auto;
-          padding: 0 24px 32px 24px;
+          padding: 0 16px 32px 16px;
+        }
+        @media (min-width: 600px) {
+          .content-wrapper {
+            padding: 0 24px 32px 24px;
+          }
         }
       `}</style>
 
@@ -224,13 +311,21 @@ export default function Index() {
         <div style={{ 
           background: 'linear-gradient(135deg, #1976d2, #1565c0)', 
           color: 'white', 
-          padding: '24px', 
+          padding: '20px', 
           borderRadius: '12px', 
           textAlign: 'center', 
-          marginBottom: '32px' 
+          marginBottom: '24px' 
         }}>
-          <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>✨ 新形式チケットシステム</h2>
-          <p style={{ margin: 0, opacity: 0.9 }}>
+          <h2 style={{ 
+            margin: '0 0 8px 0', 
+            fontSize: '20px',
+            '@media (min-width: 600px)': { fontSize: '24px' }
+          }}>✨ 新形式チケットシステム</h2>
+          <p style={{ 
+            margin: 0, 
+            opacity: 0.9,
+            fontSize: '14px'
+          }}>
             イベント作成からチケット発行まで、すべて統合管理
           </p>
         </div>

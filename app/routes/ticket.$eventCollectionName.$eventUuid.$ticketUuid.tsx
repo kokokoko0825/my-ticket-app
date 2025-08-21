@@ -106,12 +106,13 @@ export default function NewFormatTicketPage() {
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '40px',
+          borderRadius: '16px',
+          padding: '24px',
           textAlign: 'center',
           boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
           maxWidth: '400px',
-          width: '90%'
+          width: '90%',
+          margin: '0 16px'
         }}>
           <div style={{
             fontSize: '48px',
@@ -145,51 +146,53 @@ export default function NewFormatTicketPage() {
         justifyContent: 'center',
         alignItems: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
+        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+        padding: '16px'
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '40px',
+          borderRadius: '16px',
+          padding: '24px',
           textAlign: 'center',
           boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
           maxWidth: '500px',
-          width: '90%'
+          width: '100%'
         }}>
           <div style={{
-            fontSize: '72px',
-            marginBottom: '20px',
+            fontSize: '48px',
+            marginBottom: '16px',
             color: '#4CAF50'
           }}>
             ✅
           </div>
           <h1 style={{
             color: '#4CAF50',
-            marginBottom: '20px',
-            fontSize: '28px'
+            marginBottom: '16px',
+            fontSize: '24px'
           }}>
             入場完了！
           </h1>
           <div style={{
             background: '#f8f9fa',
             borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px'
+            padding: '16px',
+            marginBottom: '16px'
           }}>
-            <h3 style={{ color: '#333', marginBottom: '10px' }}>
+            <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '18px' }}>
               {ticketData.name}さん
             </h3>
-            <p style={{ color: '#666', margin: '5px 0' }}>
+            <p style={{ color: '#666', margin: '4px 0', fontSize: '14px' }}>
               🎸 バンド: {ticketData.bandName}
             </p>
-            <p style={{ color: '#666', margin: '5px 0' }}>
+            <p style={{ color: '#666', margin: '4px 0', fontSize: '14px' }}>
               🎫 コレクション: {eventCollectionName}
             </p>
           </div>
           <p style={{
             color: '#666',
-            marginBottom: '30px',
-            lineHeight: '1.6'
+            marginBottom: '20px',
+            lineHeight: '1.6',
+            fontSize: '14px'
           }}>
             {message}
             <br />
@@ -201,12 +204,14 @@ export default function NewFormatTicketPage() {
               background: '#4CAF50',
               color: 'white',
               border: 'none',
-              padding: '12px 30px',
+              padding: '12px 24px',
               borderRadius: '25px',
               fontSize: '16px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              fontWeight: '600'
+              fontWeight: '600',
+              minHeight: '48px',
+              touchAction: 'manipulation'
             }}
           >
             🏠 ホームに戻る
@@ -224,28 +229,29 @@ export default function NewFormatTicketPage() {
         justifyContent: 'center',
         alignItems: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
+        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+        padding: '16px'
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '40px',
+          borderRadius: '16px',
+          padding: '24px',
           textAlign: 'center',
           boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
           maxWidth: '500px',
-          width: '90%'
+          width: '100%'
         }}>
           <div style={{
-            fontSize: '72px',
-            marginBottom: '20px',
+            fontSize: '48px',
+            marginBottom: '16px',
             color: '#f44336'
           }}>
             ❌
           </div>
           <h1 style={{
             color: '#f44336',
-            marginBottom: '20px',
-            fontSize: '28px'
+            marginBottom: '16px',
+            fontSize: '24px'
           }}>
             エラーが発生しました
           </h1>
@@ -301,12 +307,14 @@ export default function NewFormatTicketPage() {
               background: '#666',
               color: 'white',
               border: 'none',
-              padding: '12px 30px',
+              padding: '12px 24px',
               borderRadius: '25px',
               fontSize: '16px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              fontWeight: '600'
+              fontWeight: '600',
+              minHeight: '48px',
+              touchAction: 'manipulation'
             }}
           >
             🏠 ホームに戻る
