@@ -44,40 +44,77 @@ if (!getApps().length) {
 export const db = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
 
-// MUIテーマの作成（レスポンシブ対応強化）
+// MUIテーマの作成（モバイルファースト設計）
 export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
       main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
     },
     secondary: {
       main: '#dc004e',
+      light: '#ff5983',
+      dark: '#9a0036',
+    },
+    background: {
+      default: '#f8f9fa',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#212121',
+      secondary: '#757575',
     },
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    // レスポンシブなフォントサイズ
+    // モバイルファーストなフォントサイズ
     h1: {
-      fontSize: '2rem',
+      fontSize: '1.75rem',
+      fontWeight: 600,
+      lineHeight: 1.2,
       '@media (min-width:600px)': {
-        fontSize: '2.5rem',
+        fontSize: '2.25rem',
       },
       '@media (min-width:960px)': {
-        fontSize: '3rem',
+        fontSize: '2.75rem',
       },
     },
     h2: {
-      fontSize: '1.5rem',
+      fontSize: '1.375rem',
+      fontWeight: 600,
+      lineHeight: 1.3,
       '@media (min-width:600px)': {
-        fontSize: '2rem',
+        fontSize: '1.75rem',
+      },
+    },
+    h3: {
+      fontSize: '1.125rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
+      '@media (min-width:600px)': {
+        fontSize: '1.375rem',
       },
     },
     body1: {
       fontSize: '0.875rem',
+      lineHeight: 1.6,
       '@media (min-width:600px)': {
         fontSize: '1rem',
       },
+    },
+    body2: {
+      fontSize: '0.8125rem',
+      lineHeight: 1.5,
+      '@media (min-width:600px)': {
+        fontSize: '0.875rem',
+      },
+    },
+    button: {
+      fontSize: '0.875rem',
+      fontWeight: 600,
+      textTransform: 'none',
     },
   },
   breakpoints: {
@@ -89,26 +126,49 @@ export const theme = createTheme({
       xl: 1920,
     },
   },
+  spacing: 8, // 8px基準のスペーシング
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          // モバイルでの縦向きロック時の拡大を防ぐ
+          textSizeAdjust: '100%',
+          WebkitTextSizeAdjust: '100%',
+        },
         body: {
           fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
           margin: 0,
           padding: 0,
-          backgroundColor: '#f5f5f5',
+          backgroundColor: '#f8f9fa',
           // タッチデバイスでのスクロール改善
-          '-webkit-overflow-scrolling': 'touch',
+          WebkitOverflowScrolling: 'touch',
           // モバイルでのタップハイライト色を調整
-          '-webkit-tap-highlight-color': 'rgba(0, 0, 0, 0.1)',
+          WebkitTapHighlightColor: 'rgba(25, 118, 210, 0.15)',
+          // モバイルでのスクロールバー非表示
+          scrollbarWidth: 'thin',
+          '&::-webkit-scrollbar': {
+            width: '4px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,0.2)',
+            borderRadius: '2px',
+          },
         },
         '*': {
-          // ボックスサイジングをborder-boxに統一
           boxSizing: 'border-box',
         },
-        // モバイルでの拡大縮小を防ぐ
+        // モバイルでの拡大縮小を防ぐ（16px以上でズーム防止）
         'input, textarea, select': {
           fontSize: '16px !important',
+          fontFamily: 'inherit',
+        },
+        // フォーカス時のアウトライン改善
+        'button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible': {
+          outline: '2px solid #1976d2',
+          outlineOffset: '2px',
         },
       },
     },
@@ -116,15 +176,33 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: '8px',
-          // モバイルでのタッチ操作を改善
-          minHeight: '44px',
-          minWidth: '44px',
+          borderRadius: '12px',
+          fontWeight: 600,
+          // モバイルでのタッチ操作最適化
+          minHeight: '48px',
+          minWidth: '48px',
+          padding: '12px 24px',
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          // タッチデバイスでのhover無効化
           '@media (hover: none)': {
             '&:hover': {
               backgroundColor: 'inherit',
             },
           },
+          // タッチフィードバック
+          '&:active': {
+            transform: 'scale(0.98)',
+          },
+        },
+        sizeSmall: {
+          minHeight: '40px',
+          padding: '8px 16px',
+          fontSize: '0.8125rem',
+        },
+        sizeLarge: {
+          minHeight: '56px',
+          padding: '16px 32px',
+          fontSize: '1rem',
         },
       },
     },
@@ -140,10 +218,47 @@ export const theme = createTheme({
         },
       },
     },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '16px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          '@media (max-width:600px)': {
+            borderRadius: '12px',
+            margin: '0 8px',
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            fontSize: '16px', // ズーム防止
+            '@media (max-width:600px)': {
+              borderRadius: '8px',
+            },
+          },
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {
           backgroundColor: '#1976d2',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+        },
+      },
+    },
+    MuiFab: {
+      styleOverrides: {
+        root: {
+          // モバイルでのFABサイズ調整
+          '@media (max-width:600px)': {
+            width: '64px',
+            height: '64px',
+          },
         },
       },
     },

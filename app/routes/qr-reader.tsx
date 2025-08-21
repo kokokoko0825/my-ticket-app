@@ -321,18 +321,54 @@ export default function QRReader() {
           }
         }
         #qr-reader-container {
-          min-height: 300px;
+          min-height: 280px;
           width: 100%;
+          background: #f8f9fa;
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
         }
+        
         @media (min-width: 600px) {
           #qr-reader-container {
             min-height: 400px;
+            border-radius: 16px;
           }
         }
+        
         #qr-reader-container video {
           width: 100% !important;
           height: auto !important;
           max-width: 100% !important;
+          border-radius: inherit;
+          object-fit: cover;
+        }
+        
+        #qr-reader-container canvas {
+          border-radius: inherit;
+        }
+        
+        /* QRスキャナーの枠線スタイル改善 */
+        #qr-reader-container > div {
+          border-radius: inherit !important;
+        }
+        
+        /* html5-qrcode のボタンスタイル改善 */
+        #qr-reader-container button {
+          background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+          border: none !important;
+          border-radius: 12px !important;
+          color: white !important;
+          font-weight: 600 !important;
+          padding: 12px 20px !important;
+          margin: 8px 4px !important;
+          transition: all 0.2s ease !important;
+          min-height: 44px !important;
+        }
+        
+        #qr-reader-container button:hover {
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
         }
         .camera-controls {
           padding: 16px;
@@ -482,12 +518,38 @@ export default function QRReader() {
         }
         .scanning-indicator {
           text-align: center;
-          padding: 16px;
-          background: #e8f5e8;
-          border-radius: 8px;
+          padding: 16px 20px;
+          background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+          border-radius: 16px;
           margin-bottom: 16px;
-          color: #2e7d32;
-          font-weight: 500;
+          color: #1b5e20;
+          font-weight: 600;
+          box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .scanning-indicator::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          animation: scanning-animation 2s infinite;
+        }
+        
+        @keyframes scanning-animation {
+          0% { left: -100%; }
+          100% { left: 100%; }
+        }
+        
+        @media (min-width: 600px) {
+          .scanning-indicator {
+            border-radius: 12px;
+            padding: 18px 24px;
+          }
         }
       `}</style>
 
@@ -553,20 +615,65 @@ export default function QRReader() {
 
         {/* QRスキャナー */}
         <div className="camera-card">
+          {!isScanning && !error && (
+            <div style={{
+              padding: '24px',
+              textAlign: 'center',
+              background: 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
+              color: '#0d47a1',
+              borderRadius: '12px',
+              margin: '0 0 16px 0'
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>📱</div>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>
+                QRコードスキャン準備中
+              </h3>
+              <p style={{ margin: 0, fontSize: '14px', opacity: 0.8 }}>
+                カメラの使用許可を確認してください
+              </p>
+            </div>
+          )}
+          
           <div 
             id="qr-reader-container"
             ref={scannerRef}
             style={{ width: '100%' }}
           />
+          
           {isScanning && (
-            <div className="camera-controls">
-              <button 
-                className="control-btn stop-btn"
-                onClick={stopScanner}
-              >
-                ⏹️ スキャン停止
-              </button>
-            </div>
+            <>
+              <div style={{
+                padding: '16px 20px',
+                background: '#f8f9fa',
+                borderTop: '1px solid #e1e5e9',
+                textAlign: 'center'
+              }}>
+                <p style={{ 
+                  margin: '0 0 8px 0', 
+                  fontSize: '14px', 
+                  color: '#1976d2',
+                  fontWeight: '600'
+                }}>
+                  📸 QRコードをカメラの中央に合わせてください
+                </p>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: '12px', 
+                  color: '#757575' 
+                }}>
+                  チケットのQRコードが自動的に認識されます
+                </p>
+              </div>
+              
+              <div className="camera-controls">
+                <button 
+                  className="control-btn stop-btn"
+                  onClick={stopScanner}
+                >
+                  ⏹️ スキャン停止
+                </button>
+              </div>
+            </>
           )}
         </div>
 

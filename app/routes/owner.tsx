@@ -1464,21 +1464,82 @@ export default function OwnerDashboard() {
         .visitors-table {
           width: 100%;
           border-collapse: collapse;
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
         }
+        
+        @media (min-width: 768px) {
+          .visitors-table {
+            display: table;
+            white-space: normal;
+          }
+        }
+        
         .visitors-table th {
           background: #fafafa;
-          padding: 16px;
+          padding: 12px 8px;
           text-align: left;
           font-weight: 600;
           color: #333;
           border-bottom: 1px solid #e0e0e0;
+          font-size: 13px;
+          min-width: 100px;
         }
+        
+        @media (min-width: 768px) {
+          .visitors-table th {
+            padding: 16px;
+            font-size: 14px;
+            min-width: auto;
+          }
+        }
+        
         .visitors-table td {
-          padding: 16px;
+          padding: 12px 8px;
           border-bottom: 1px solid #f0f0f0;
+          font-size: 13px;
+          min-width: 100px;
         }
+        
+        @media (min-width: 768px) {
+          .visitors-table td {
+            padding: 16px;
+            font-size: 14px;
+            min-width: auto;
+          }
+        }
+        
         .visitors-table tr:hover {
           background: #f8f9fa;
+        }
+        
+        .visitors-table thead {
+          display: block;
+        }
+        
+        .visitors-table tbody {
+          display: block;
+        }
+        
+        .visitors-table thead tr,
+        .visitors-table tbody tr {
+          display: table;
+          table-layout: fixed;
+          width: 100%;
+        }
+        
+        @media (min-width: 768px) {
+          .visitors-table thead,
+          .visitors-table tbody {
+            display: table-header-group;
+          }
+          
+          .visitors-table thead tr,
+          .visitors-table tbody tr {
+            display: table-row;
+            table-layout: auto;
+          }
         }
         .visitor-name {
           font-weight: 500;
@@ -1500,22 +1561,39 @@ export default function OwnerDashboard() {
         }
         .fab-button {
           position: fixed;
-          bottom: 24px;
-          right: 24px;
-          width: 72px;
-          height: 72px;
+          bottom: 20px;
+          right: 20px;
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
-          background: #1976d2;
+          background: linear-gradient(135deg, #1976d2, #1565c0);
           border: none;
           color: white;
-          font-size: 32px;
+          font-size: 24px;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          transition: all 0.2s;
+          box-shadow: 0 6px 16px rgba(25, 118, 210, 0.3);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 1000;
+          touch-action: manipulation;
         }
+        
+        @media (min-width: 600px) {
+          .fab-button {
+            bottom: 24px;
+            right: 24px;
+            width: 72px;
+            height: 72px;
+            font-size: 28px;
+          }
+        }
+        
         .fab-button:hover {
-          background: #1565c0;
-          transform: scale(1.05);
+          transform: translateY(-2px) scale(1.05);
+          box-shadow: 0 8px 20px rgba(25, 118, 210, 0.4);
+        }
+        
+        .fab-button:active {
+          transform: translateY(0) scale(1.02);
         }
         .modal-overlay {
           position: fixed;
@@ -1531,11 +1609,20 @@ export default function OwnerDashboard() {
         }
         .modal-content {
           background: white;
-          padding: 24px;
-          border-radius: 12px;
+          padding: 20px;
+          border-radius: 16px;
           max-width: 400px;
           width: 90%;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+        
+        @media (min-width: 600px) {
+          .modal-content {
+            padding: 24px;
+            border-radius: 20px;
+          }
         }
         .modal-title {
           font-size: 20px;
@@ -1545,16 +1632,37 @@ export default function OwnerDashboard() {
         }
         .form-input {
           width: 100%;
-          padding: 12px;
-          border: 2px solid #e0e0e0;
-          border-radius: 8px;
+          padding: 16px 20px;
+          border: 2px solid #e1e5e9;
+          border-radius: 16px;
           font-size: 16px;
-          margin-bottom: 8px;
+          background: #fafbfc;
+          transition: all 0.2s ease;
+          margin-bottom: 12px;
           box-sizing: border-box;
+          -webkit-appearance: none;
+          appearance: none;
+          line-height: 1.5;
         }
+        
         .form-input:focus {
           outline: none;
           border-color: #1976d2;
+          background: white;
+          box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
+          transform: translateY(-1px);
+        }
+        
+        .form-input::placeholder {
+          color: #9e9e9e;
+          font-weight: 400;
+        }
+        
+        @media (min-width: 600px) {
+          .form-input {
+            border-radius: 12px;
+            padding: 14px 18px;
+          }
         }
         .form-note {
           color: #666;
@@ -1576,17 +1684,28 @@ export default function OwnerDashboard() {
           font-size: 14px;
         }
         .btn-primary {
-          background: #1976d2;
+          background: linear-gradient(135deg, #1976d2, #1565c0);
           color: white;
           border: none;
-          padding: 10px 16px;
-          border-radius: 6px;
+          padding: 14px 20px;
+          border-radius: 12px;
           cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
+          font-size: 16px;
+          font-weight: 600;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          min-height: 48px;
+          touch-action: manipulation;
+          box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
         }
+        
         .btn-primary:hover {
-          background: #1565c0;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(25, 118, 210, 0.35);
+        }
+        
+        .btn-primary:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
         }
         .loading-text {
           text-align: center;

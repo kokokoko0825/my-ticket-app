@@ -454,18 +454,42 @@ export default function AdminPage() {
           overflow: hidden;
         }
         .section-header {
-          background: #fafafa;
-          padding: 20px 24px;
-          border-bottom: 1px solid #e0e0e0;
+          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          padding: 16px 20px;
+          border-bottom: 1px solid #e1e5e9;
+          position: relative;
         }
+        
+        @media (min-width: 600px) {
+          .section-header {
+            padding: 20px 24px;
+          }
+        }
+        
         .section-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: #333;
+          font-size: 16px;
+          font-weight: 700;
+          color: #212121;
           margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
+        
+        @media (min-width: 600px) {
+          .section-title {
+            font-size: 18px;
+          }
+        }
+        
         .section-content {
-          padding: 24px;
+          padding: 20px;
+        }
+        
+        @media (min-width: 600px) {
+          .section-content {
+            padding: 24px;
+          }
         }
         .form-row {
           display: flex;
@@ -482,62 +506,148 @@ export default function AdminPage() {
         }
         .form-input {
           flex: 1;
-          padding: 12px 16px;
-          border: 2px solid #e0e0e0;
-          border-radius: 8px;
+          padding: 16px 20px;
+          border: 2px solid #e1e5e9;
+          border-radius: 16px;
           font-size: 16px;
-          transition: border-color 0.2s;
+          background: #fafbfc;
+          transition: all 0.2s ease;
           font-family: inherit;
           -webkit-appearance: none;
           appearance: none;
+          line-height: 1.5;
         }
+        
         .form-input:focus {
           outline: none;
           border-color: #1976d2;
+          background: white;
+          box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
+          transform: translateY(-1px);
+        }
+        
+        .form-input::placeholder {
+          color: #9e9e9e;
+          font-weight: 400;
+        }
+        
+        @media (min-width: 600px) {
+          .form-input {
+            border-radius: 12px;
+            padding: 14px 18px;
+          }
         }
         .create-btn {
-          background: #1976d2;
+          background: linear-gradient(135deg, #1976d2, #1565c0);
           color: white;
           border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
+          padding: 16px 28px;
+          border-radius: 16px;
           cursor: pointer;
           font-size: 16px;
-          font-weight: 500;
-          transition: background 0.2s;
-          min-width: 120px;
-          min-height: 48px;
+          font-weight: 700;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          min-width: 140px;
+          min-height: 52px;
           touch-action: manipulation;
+          box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
+          position: relative;
+          overflow: hidden;
         }
+        
+        .create-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.5s ease;
+        }
+        
+        .create-btn:active::before {
+          left: 100%;
+        }
+        
+        @media (min-width: 600px) {
+          .create-btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            min-height: 48px;
+          }
+        }
+        
         .create-btn:hover {
-          background: #1565c0;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(25, 118, 210, 0.35);
         }
+        
+        .create-btn:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+        }
+        
         .create-btn:disabled {
-          background: #ccc;
+          background: #e0e0e0;
           cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+          color: #9e9e9e;
         }
         .tickets-header {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          flex-direction: column;
+          gap: 12px;
           margin-bottom: 20px;
         }
+        
+        @media (min-width: 600px) {
+          .tickets-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+          }
+        }
+        
         .refresh-btn {
-          background: #666;
+          background: #757575;
           color: white;
           border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
+          padding: 12px 20px;
+          border-radius: 12px;
           cursor: pointer;
           font-size: 14px;
-          transition: background 0.2s;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          min-height: 44px;
+          touch-action: manipulation;
+          align-self: flex-start;
         }
+        
+        @media (min-width: 600px) {
+          .refresh-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            min-height: 40px;
+          }
+        }
+        
         .refresh-btn:hover {
-          background: #555;
+          background: #616161;
+          transform: translateY(-1px);
         }
+        
+        .refresh-btn:active {
+          transform: translateY(0);
+        }
+        
         .refresh-btn:disabled {
-          background: #ccc;
+          background: #e0e0e0;
           cursor: not-allowed;
+          transform: none;
+          color: #9e9e9e;
         }
         .ticket-list {
           list-style: none;
@@ -546,11 +656,21 @@ export default function AdminPage() {
         }
         .ticket-item {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          flex-direction: column;
+          gap: 12px;
           padding: 16px 0;
           border-bottom: 1px solid #f0f0f0;
         }
+        
+        @media (min-width: 600px) {
+          .ticket-item {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+          }
+        }
+        
         .ticket-item:last-child {
           border-bottom: none;
         }
@@ -559,28 +679,46 @@ export default function AdminPage() {
         }
         .ticket-name {
           font-size: 16px;
-          font-weight: 600;
+          font-weight: 700;
           color: #1976d2;
-          margin: 0 0 4px 0;
+          margin: 0 0 6px 0;
           cursor: pointer;
-          transition: color 0.2s;
-          text-decoration: underline;
+          transition: all 0.2s ease;
+          text-decoration: none;
+          border-bottom: 2px solid transparent;
+          display: inline-block;
+          padding-bottom: 2px;
         }
+        
         .ticket-name:hover {
           color: #1565c0;
+          border-bottom-color: #1565c0;
         }
+        
         .ticket-details {
-          font-size: 12px;
-          color: #666;
+          font-size: 13px;
+          color: #757575;
           margin: 0;
+          line-height: 1.4;
         }
+        
         .status-badge {
-          padding: 6px 12px;
-          border-radius: 16px;
+          padding: 8px 16px;
+          border-radius: 20px;
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 700;
           color: white;
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          min-height: 32px;
+          align-self: flex-start;
+        }
+        
+        @media (min-width: 600px) {
+          .status-badge {
+            align-self: center;
+          }
         }
         .status-pending {
           background: #ff9800;
@@ -751,7 +889,7 @@ export default function AdminPage() {
         {/* チケット作成セクション */}
         <div className="section-card">
           <div className="section-header">
-            <h2 className="section-title">新しいチケット作成</h2>
+            <h2 className="section-title">🎫 新しいチケット作成</h2>
           </div>
           <div className="section-content">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -775,7 +913,7 @@ export default function AdminPage() {
                 disabled={loading}
                 style={{ marginTop: '8px' }}
               >
-                {loading ? "作成中..." : "作成"}
+                {loading ? "🔄 作成中..." : "✨ チケット作成"}
               </button>
             </div>
           </div>
@@ -787,14 +925,14 @@ export default function AdminPage() {
         <div className="section-card">
           <div className="section-header">
             <div className="tickets-header">
-              <h2 className="section-title">発行済みチケット一覧</h2>
+              <h2 className="section-title">📋 発行済みチケット一覧</h2>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
                   className="refresh-btn" 
                   onClick={fetchTickets} 
                   disabled={loading}
                 >
-                  更新
+                  🔄 更新
                 </button>
                 <button 
                   className="refresh-btn"
@@ -822,7 +960,7 @@ export default function AdminPage() {
                   style={{ background: '#ff9800' }}
                   title="既存のstateフィールドをstatusに移行"
                 >
-                  データ移行
+                  🔧 データ移行
                 </button>
               </div>
             </div>

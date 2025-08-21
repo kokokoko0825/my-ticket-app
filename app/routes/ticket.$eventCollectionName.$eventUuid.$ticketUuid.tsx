@@ -106,13 +106,15 @@ export default function NewFormatTicketPage() {
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '16px',
-          padding: '24px',
+          borderRadius: '20px',
+          padding: '20px',
           textAlign: 'center',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
           maxWidth: '400px',
-          width: '90%',
-          margin: '0 16px'
+          width: '100%',
+          margin: '0 12px',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
           <div style={{
             fontSize: '48px',
@@ -151,12 +153,15 @@ export default function NewFormatTicketPage() {
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '16px',
+          borderRadius: '20px',
           padding: '24px',
           textAlign: 'center',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
           maxWidth: '500px',
-          width: '100%'
+          width: '100%',
+          margin: '0 12px',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
           <div style={{
             fontSize: '48px',
@@ -173,20 +178,71 @@ export default function NewFormatTicketPage() {
             入場完了！
           </h1>
           <div style={{
-            background: '#f8f9fa',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px'
+            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+            borderRadius: '16px',
+            padding: '20px',
+            marginBottom: '20px',
+            position: 'relative',
+            border: '2px solid #e1e5e9'
           }}>
-            <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '18px' }}>
-              {ticketData.name}さん
+            <div style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              background: '#4CAF50',
+              color: 'white',
+              borderRadius: '20px',
+              padding: '4px 12px',
+              fontSize: '12px',
+              fontWeight: '600'
+            }}>
+              入場済み
+            </div>
+            <h3 style={{ 
+              color: '#212121', 
+              marginBottom: '12px', 
+              fontSize: '20px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              👤 {ticketData.name}さん
             </h3>
-            <p style={{ color: '#666', margin: '4px 0', fontSize: '14px' }}>
-              🎸 バンド: {ticketData.bandName}
-            </p>
-            <p style={{ color: '#666', margin: '4px 0', fontSize: '14px' }}>
-              🎫 コレクション: {eventCollectionName}
-            </p>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              textAlign: 'left'
+            }}>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '12px'
+              }}>
+                <span style={{ fontSize: '16px' }}>🎸</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#1976d2' }}>
+                  {ticketData.bandName}
+                </span>
+              </div>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '12px'
+              }}>
+                <span style={{ fontSize: '16px' }}>🎫</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#757575' }}>
+                  {eventCollectionName}
+                </span>
+              </div>
+            </div>
           </div>
           <p style={{
             color: '#666',
@@ -201,17 +257,28 @@ export default function NewFormatTicketPage() {
           <button
             onClick={handleReturnHome}
             style={{
-              background: '#4CAF50',
+              background: 'linear-gradient(135deg, #4CAF50, #2e7d32)',
               color: 'white',
               border: 'none',
-              padding: '12px 24px',
-              borderRadius: '25px',
+              padding: '16px 32px',
+              borderRadius: '30px',
               fontSize: '16px',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              minHeight: '48px',
-              touchAction: 'manipulation'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              fontWeight: '700',
+              minHeight: '56px',
+              touchAction: 'manipulation',
+              boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(76, 175, 80, 0.3)';
             }}
           >
             🏠 ホームに戻る
@@ -234,12 +301,15 @@ export default function NewFormatTicketPage() {
       }}>
         <div style={{
           background: 'white',
-          borderRadius: '16px',
+          borderRadius: '20px',
           padding: '24px',
           textAlign: 'center',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
           maxWidth: '500px',
-          width: '100%'
+          width: '100%',
+          margin: '0 12px',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
           <div style={{
             fontSize: '48px',
@@ -304,17 +374,28 @@ export default function NewFormatTicketPage() {
           <button
             onClick={handleReturnHome}
             style={{
-              background: '#666',
+              background: 'linear-gradient(135deg, #757575, #616161)',
               color: 'white',
               border: 'none',
-              padding: '12px 24px',
-              borderRadius: '25px',
+              padding: '16px 32px',
+              borderRadius: '30px',
               fontSize: '16px',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              minHeight: '48px',
-              touchAction: 'manipulation'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              fontWeight: '700',
+              minHeight: '56px',
+              touchAction: 'manipulation',
+              boxShadow: '0 4px 16px rgba(117, 117, 117, 0.3)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(117, 117, 117, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(117, 117, 117, 0.3)';
             }}
           >
             🏠 ホームに戻る
