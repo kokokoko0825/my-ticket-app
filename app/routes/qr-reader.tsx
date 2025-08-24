@@ -2,6 +2,26 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { 
+  Button, 
+  Header, 
+  PageContainer, 
+  Card,
+  CardHeader,
+  CardContent
+} from "../components";
+import { 
+  cameraContainer,
+  cameraCard,
+  qrReaderContainer,
+  cameraControls,
+  errorCard,
+  scanningIndicator,
+  overlay,
+  overlayContent,
+  overlayHeader,
+  overlayBody
+} from "../styles/qr-reader.css";
 // import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 // import { db } from "../root";
 
@@ -38,6 +58,9 @@ export default function QRReader() {
       return;
     }
 
+    console.log("🎯 QRスキャナー初期化開始...");
+    console.log("📋 コンテナ要素:", container);
+
     try {
       setError(null);
       setIsScanning(true);
@@ -51,9 +74,12 @@ export default function QRReader() {
           rememberLastUsedCamera: true,
           experimentalFeatures: {
             useBarCodeDetectorIfSupported: true
+          },
+          videoConstraints: {
+            facingMode: "environment"  // 背面カメラを優先
           }
         },
-        /* verbose= */ false
+        /* verbose= */ true  // デバッグ用に一時的にtrueに
       );
 
       // 成功コールバック
@@ -73,7 +99,9 @@ export default function QRReader() {
       };
 
       // スキャナーをレンダリング
+      console.log("📹 QRスキャナーレンダリング開始...");
       await qrScanner.render(qrCodeSuccessCallback, qrCodeErrorCallback);
+      console.log("✅ QRスキャナー初期化完了");
       setScanner(qrScanner);
 
     } catch (err) {
@@ -233,388 +261,57 @@ export default function QRReader() {
   }, [scanner]);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
-      fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
-    }}>
-      <style>{`
-        .qr-header {
-          background: linear-gradient(135deg, #388e3c, #2e7d32);
-          color: white;
-          padding: 0.75rem 1rem;
-          box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
-          margin-bottom: 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .qr-header {
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-          }
-        }
-        .qr-nav {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-        .qr-title {
-          font-size: 1.125rem;
-          font-weight: 600;
-          margin: 0;
-          flex: 1;
-          min-width: 0;
-        }
-        @media (min-width: 37.5rem) {
-          .qr-title {
-            font-size: 1.5rem;
-          }
-        }
-        .back-btn {
-          background: transparent;
-          border: 0.125rem solid white;
-          color: white;
-          padding: 0.375rem 0.75rem;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          font-size: 0.75rem;
-          font-weight: 500;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          min-height: 2.25rem;
-          touch-action: manipulation;
-        }
-        @media (min-width: 37.5rem) {
-          .back-btn {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-            gap: 0.5rem;
-          }
-        }
-        .back-btn:hover {
-          background: white;
-          color: #388e3c;
-        }
-        .camera-container {
-          max-width: 37.5rem;
-          margin: 0 auto;
-          padding: 0 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .camera-container {
-            padding: 0 1.5rem;
-          }
-        }
-        .camera-card {
-          background: white;
-          border-radius: 0.75rem;
-          box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.1);
-          overflow: hidden;
-          margin-bottom: 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .camera-card {
-            margin-bottom: 1.5rem;
-          }
-        }
-        #qr-reader-container {
-          min-height: 17.5rem;
-          width: 100%;
-          background: #f8f9fa;
-          border-radius: 0.75rem;
-          overflow: hidden;
-          position: relative;
-        }
-        
-        @media (min-width: 37.5rem) {
-          #qr-reader-container {
-            min-height: 25rem;
-            border-radius: 1rem;
-          }
-        }
-        
-        #qr-reader-container video {
-          width: 100% !important;
-          height: auto !important;
-          max-width: 100% !important;
-          border-radius: inherit;
-          object-fit: cover;
-        }
-        
-        #qr-reader-container canvas {
-          border-radius: inherit;
-        }
-        
-        /* QRスキャナーの枠線スタイル改善 */
-        #qr-reader-container > div {
-          border-radius: inherit !important;
-        }
-        
-        /* html5-qrcode のボタンスタイル改善 */
-        #qr-reader-container button {
-          background: linear-gradient(135deg, #1976d2, #1565c0) !important;
-          border: none !important;
-          border-radius: 0.75rem !important;
-          color: white !important;
-          font-weight: 600 !important;
-          padding: 0.75rem 1.25rem !important;
-          margin: 0.5rem 0.25rem !important;
-          transition: all 0.2s ease !important;
-          min-height: 2.75rem !important;
-        }
-        
-        #qr-reader-container button:hover {
-          transform: translateY(-0.0625rem) !important;
-          box-shadow: 0 0.25rem 0.75rem rgba(25, 118, 210, 0.3) !important;
-        }
-        .camera-controls {
-          padding: 1rem;
-          text-align: center;
-        }
-        @media (min-width: 37.5rem) {
-          .camera-controls {
-            padding: 1.5rem;
-          }
-        }
-        .control-btn {
-          padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          font-size: 1rem;
-          font-weight: 600;
-          margin: 0.25rem;
-          transition: all 0.2s;
-          min-height: 3rem;
-          touch-action: manipulation;
-        }
-        @media (min-width: 37.5rem) {
-          .control-btn {
-            padding: 1rem 2rem;
-            margin: 0 0.5rem;
-          }
-        }
-        .stop-btn {
-          background: #d32f2f;
-          color: white;
-        }
-        .stop-btn:hover {
-          background: #c62828;
-        }
-        .error-card {
-          background: #ffebee;
-          border: 0.0625rem solid #ef5350;
-          border-radius: 0.5rem;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-          color: #c62828;
-        }
-        .info-card {
-          background: white;
-          border-radius: 0.75rem;
-          box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.1);
-          padding: 1rem;
-          margin-bottom: 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .info-card {
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-          }
-        }
-        .result-card {
-          background: white;
-          border-radius: 0.75rem;
-          box-shadow: 0 0.375rem 1.25rem rgba(0,0,0,0.15);
-          margin-bottom: 1rem;
-          overflow: hidden;
-          border-left: 0.375rem solid #2e7d32;
-        }
-        @media (min-width: 37.5rem) {
-          .result-card {
-            margin-bottom: 1.5rem;
-          }
-        }
-        .result-card.error {
-          border-left-color: #d32f2f;
-        }
-        .result-header {
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-          padding: 1rem;
-          border-bottom: 0.0625rem solid #e0e0e0;
-        }
-        @media (min-width: 37.5rem) {
-          .result-header {
-            padding: 1.5rem;
-          }
-        }
-        .result-content {
-          padding: 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .result-content {
-            padding: 1.5rem;
-          }
-        }
-        .overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .overlay {
-            padding: 1.5rem;
-          }
-        }
-        .overlay-content {
-          background: white;
-          border-radius: 1rem;
-          box-shadow: 0 0.625rem 1.875rem rgba(0,0,0,0.3);
-          max-width: 31.25rem;
-          width: 100%;
-          max-height: 80vh;
-          overflow-y: auto;
-          position: relative;
-          animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-3.125rem) scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        .overlay-header {
-          padding: 1rem 1rem 0.75rem 1rem;
-          border-bottom: 0.0625rem solid #e0e0e0;
-          position: relative;
-        }
-        @media (min-width: 37.5rem) {
-          .overlay-header {
-            padding: 1.5rem 1.5rem 1rem 1.5rem;
-          }
-        }
-        .overlay-body {
-          padding: 1rem;
-        }
-        @media (min-width: 37.5rem) {
-          .overlay-body {
-            padding: 1.5rem;
-          }
-        }
-        .scanning-indicator {
-          text-align: center;
-          padding: 1rem 1.25rem;
-          background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-          border-radius: 1rem;
-          margin-bottom: 1rem;
-          color: #1b5e20;
-          font-weight: 600;
-          box-shadow: 0 0.125rem 0.5rem rgba(76, 175, 80, 0.15);
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .scanning-indicator::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-          animation: scanning-animation 2s infinite;
-        }
-        
-        @keyframes scanning-animation {
-          0% { left: -100%; }
-          100% { left: 100%; }
-        }
-        
-        @media (min-width: 37.5rem) {
-          .scanning-indicator {
-            border-radius: 0.75rem;
-            padding: 1.125rem 1.5rem;
-          }
-        }
-      `}</style>
+    <PageContainer background="#f5f5f5">
 
       {/* ヘッダー */}
-      <div className="qr-header">
-        <div className="qr-nav">
-          <button 
-            className="back-btn"
-            onClick={() => navigate('/')}
-          >
-            ← 戻る
-          </button>
-          <h1 className="qr-title">🎫 QRコードリーダー</h1>
-          <div></div>
-        </div>
-      </div>
+      <Header
+        title="🎫 QRコードリーダー"
+        showBackButton
+        type="success"
+      />
 
-      <div className="camera-container">
+      <div className={cameraContainer}>
         {/* エラー表示 */}
         {error && (
-          <div className="error-card">
+          <div className={errorCard}>
             <div style={{ marginBottom: '16px' }}>
               ⚠️ {error}
             </div>
-            <button 
-              className="control-btn"
+            <Button 
               onClick={() => {
                 setError(null);
                 startScanner();
               }}
-              style={{ 
-                background: '#1976d2',
-                color: 'white',
-                padding: '12px 24px',
-                fontSize: '14px'
-              }}
+              size="sm"
             >
               🔄 再試行
-            </button>
+            </Button>
           </div>
         )}
 
         {/* スキャン中インジケーター */}
         {isScanning && !error && !processing && !redirectResult && (
-          <div className="scanning-indicator">
+          <div className={scanningIndicator}>
             📸 チケットをスキャン中... QRコードをカメラに向けてください
           </div>
         )}
 
         {/* 初期化中インジケーター */}
         {!isScanning && !error && !processing && !redirectResult && (
-          <div className="scanning-indicator">
+          <div className={scanningIndicator}>
             🔄 QRコードリーダーを初期化中...
           </div>
         )}
 
         {/* 処理中インジケーター */}
         {processing && (
-          <div className="scanning-indicator" style={{ background: '#fff3cd', color: '#856404' }}>
+          <div className={scanningIndicator} style={{ background: '#fff3cd', color: '#856404' }}>
             ⏳ QRコードを処理中... しばらくお待ちください
           </div>
         )}
 
         {/* QRスキャナー */}
-        <div className="camera-card">
+        <div className={cameraCard}>
           {!isScanning && !error && (
             <div style={{
               padding: '24px',
@@ -636,6 +333,7 @@ export default function QRReader() {
           
           <div 
             id="qr-reader-container"
+            className={qrReaderContainer}
             ref={scannerRef}
             style={{ width: '100%' }}
           />
@@ -665,13 +363,13 @@ export default function QRReader() {
                 </p>
               </div>
               
-              <div className="camera-controls">
-                <button 
-                  className="control-btn stop-btn"
+              <div className={cameraControls}>
+                <Button 
+                  type="danger"
                   onClick={stopScanner}
                 >
                   ⏹️ スキャン停止
-                </button>
+                </Button>
               </div>
             </>
           )}
@@ -679,9 +377,9 @@ export default function QRReader() {
 
         {/* リダイレクト結果オーバーレイ */}
         {redirectResult && (
-          <div className="overlay">
-            <div className="overlay-content">
-              <div className="overlay-header">
+          <div className={overlay}>
+            <div className={overlayContent}>
+              <div className={overlayHeader}>
                 {redirectResult.success ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ 
@@ -744,7 +442,7 @@ export default function QRReader() {
                 )}
               </div>
               
-              <div className="overlay-body">
+              <div className={overlayBody}>
                 <div style={{ 
                   fontSize: '18px', 
                   margin: '0 0 24px 0', 
@@ -792,21 +490,25 @@ export default function QRReader() {
 
         {/* 使用方法（結果表示中は非表示） */}
         {!redirectResult && !processing && (
-          <div className="info-card">
-            <h3 style={{ color: '#333', marginBottom: '16px' }}>🎫 QRコードリーダー</h3>
-            <div style={{ color: '#666', lineHeight: '1.8' }}>
-              <p><strong>1.</strong> カメラが自動的に起動します</p>
-              <p><strong>2.</strong> チケットのQRコードをカメラに向ける</p>
-              <p><strong>3.</strong> 自動的にチケットページに遷移します</p>
-              <p><strong>4.</strong> チケット詳細ページで入場処理が行われます</p>
-              <p style={{ color: '#2e7d32', fontWeight: 'bold', marginTop: '12px' }}>
-                ✅ チケットページで入場状況が確認できます
-              </p>
-            </div>
-          </div>
+          <Card>
+            <CardHeader type="success">
+              <h3 style={{ color: 'white', margin: 0 }}>🎫 QRコードリーダー</h3>
+            </CardHeader>
+            <CardContent>
+              <div style={{ color: '#666', lineHeight: '1.8' }}>
+                <p><strong>1.</strong> カメラが自動的に起動します</p>
+                <p><strong>2.</strong> チケットのQRコードをカメラに向ける</p>
+                <p><strong>3.</strong> 自動的にチケットページに遷移します</p>
+                <p><strong>4.</strong> チケット詳細ページで入場処理が行われます</p>
+                <p style={{ color: '#2e7d32', fontWeight: 'bold', marginTop: '12px' }}>
+                  ✅ チケットページで入場状況が確認できます
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

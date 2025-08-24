@@ -2,9 +2,22 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "@remix-run/react";
 import { doc, setDoc, collection, getDocs, query, where, Timestamp, updateDoc } from "firebase/firestore";
 import { db, auth } from "../root";
-import { QRCodeCanvas } from "qrcode.react";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import firebase from "firebase/compat/app";
+import { 
+  Button, 
+  Input, 
+  Card, 
+  CardHeader, 
+  CardContent, 
+  Header, 
+  PageContainer, 
+  ContentWrapper, 
+  Modal,
+  StatusBadge,
+  TicketDisplay
+} from "../components";
+import * as styles from "../styles/admin.css";
 
 interface TicketData {
   uuid: string;
@@ -358,623 +371,126 @@ export default function AdminPage() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
-      fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
-    }}>
-      <style>{`
-        .admin-container {
-          background: #f5f5f5;
-          min-height: 100vh;
-        }
-        .admin-header {
-          background: #1976d2;
-          color: white;
-          padding: 12px 16px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        @media (min-width: 600px) {
-          .admin-header {
-            padding: 16px 24px;
-          }
-        }
-        .admin-nav {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        .back-btn {
-          background: transparent;
-          border: 2px solid white;
-          color: white;
-          padding: 6px 12px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 12px;
-          font-weight: 500;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          min-height: 36px;
-          touch-action: manipulation;
-        }
-        @media (min-width: 600px) {
-          .back-btn {
-            padding: 8px 16px;
-            font-size: 14px;
-            gap: 8px;
-          }
-        }
-        .back-btn:hover {
-          background: white;
-          color: #1976d2;
-        }
-        .admin-title {
-          font-size: 18px;
-          font-weight: 600;
-          margin: 0;
-          flex: 1;
-          min-width: 0;
-        }
-        @media (min-width: 600px) {
-          .admin-title {
-            font-size: 24px;
-          }
-        }
-        .user-info {
-          font-size: 12px;
-          opacity: 0.9;
-          display: none;
-        }
-        @media (min-width: 480px) {
-          .user-info {
-            display: block;
-            font-size: 14px;
-          }
-        }
-        .content-wrapper {
-          max-width: 1000px;
-          margin: 0 auto;
-          padding: 16px;
-        }
-        @media (min-width: 600px) {
-          .content-wrapper {
-            padding: 32px 24px;
-          }
-        }
-        .section-card {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-          margin-bottom: 24px;
-          overflow: hidden;
-        }
-        .section-header {
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-          padding: 16px 20px;
-          border-bottom: 1px solid #e1e5e9;
-          position: relative;
-        }
-        
-        @media (min-width: 600px) {
-          .section-header {
-            padding: 20px 24px;
-          }
-        }
-        
-        .section-title {
-          font-size: 16px;
-          font-weight: 700;
-          color: #212121;
-          margin: 0;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        @media (min-width: 600px) {
-          .section-title {
-            font-size: 18px;
-          }
-        }
-        
-        .section-content {
-          padding: 20px;
-        }
-        
-        @media (min-width: 600px) {
-          .section-content {
-            padding: 24px;
-          }
-        }
-        .form-row {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          align-items: stretch;
-        }
-        @media (min-width: 600px) {
-          .form-row {
-            flex-direction: row;
-            gap: 16px;
-            align-items: end;
-          }
-        }
-        .form-input {
-          flex: 1;
-          padding: 16px 20px;
-          border: 2px solid #e1e5e9;
-          border-radius: 16px;
-          font-size: 16px;
-          background: #fafbfc;
-          transition: all 0.2s ease;
-          font-family: inherit;
-          -webkit-appearance: none;
-          appearance: none;
-          line-height: 1.5;
-        }
-        
-        .form-input:focus {
-          outline: none;
-          border-color: #1976d2;
-          background: white;
-          box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
-          transform: translateY(-1px);
-        }
-        
-        .form-input::placeholder {
-          color: #9e9e9e;
-          font-weight: 400;
-        }
-        
-        @media (min-width: 600px) {
-          .form-input {
-            border-radius: 12px;
-            padding: 14px 18px;
-          }
-        }
-        .create-btn {
-          background: linear-gradient(135deg, #1976d2, #1565c0);
-          color: white;
-          border: none;
-          padding: 16px 28px;
-          border-radius: 16px;
-          cursor: pointer;
-          font-size: 16px;
-          font-weight: 700;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          min-width: 140px;
-          min-height: 52px;
-          touch-action: manipulation;
-          box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .create-btn::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-          transition: left 0.5s ease;
-        }
-        
-        .create-btn:active::before {
-          left: 100%;
-        }
-        
-        @media (min-width: 600px) {
-          .create-btn {
-            padding: 14px 24px;
-            border-radius: 12px;
-            min-height: 48px;
-          }
-        }
-        
-        .create-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(25, 118, 210, 0.35);
-        }
-        
-        .create-btn:active {
-          transform: translateY(0);
-          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
-        }
-        
-        .create-btn:disabled {
-          background: #e0e0e0;
-          cursor: not-allowed;
-          transform: none;
-          box-shadow: none;
-          color: #9e9e9e;
-        }
-        .tickets-header {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          margin-bottom: 20px;
-        }
-        
-        @media (min-width: 600px) {
-          .tickets-header {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-          }
-        }
-        
-        .refresh-btn {
-          background: #757575;
-          color: white;
-          border: none;
-          padding: 12px 20px;
-          border-radius: 12px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 600;
-          transition: all 0.2s ease;
-          min-height: 44px;
-          touch-action: manipulation;
-          align-self: flex-start;
-        }
-        
-        @media (min-width: 600px) {
-          .refresh-btn {
-            padding: 10px 16px;
-            border-radius: 8px;
-            min-height: 40px;
-          }
-        }
-        
-        .refresh-btn:hover {
-          background: #616161;
-          transform: translateY(-1px);
-        }
-        
-        .refresh-btn:active {
-          transform: translateY(0);
-        }
-        
-        .refresh-btn:disabled {
-          background: #e0e0e0;
-          cursor: not-allowed;
-          transform: none;
-          color: #9e9e9e;
-        }
-        .ticket-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-        .ticket-item {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding: 16px 0;
-          border-bottom: 1px solid #f0f0f0;
-        }
-        
-        @media (min-width: 600px) {
-          .ticket-item {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-          }
-        }
-        
-        .ticket-item:last-child {
-          border-bottom: none;
-        }
-        .ticket-info {
-          flex: 1;
-        }
-        .ticket-name {
-          font-size: 16px;
-          font-weight: 700;
-          color: #1976d2;
-          margin: 0 0 6px 0;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-decoration: none;
-          border-bottom: 2px solid transparent;
-          display: inline-block;
-          padding-bottom: 2px;
-        }
-        
-        .ticket-name:hover {
-          color: #1565c0;
-          border-bottom-color: #1565c0;
-        }
-        
-        .ticket-details {
-          font-size: 13px;
-          color: #757575;
-          margin: 0;
-          line-height: 1.4;
-        }
-        
-        .status-badge {
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 700;
-          color: white;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          min-height: 32px;
-          align-self: flex-start;
-        }
-        
-        @media (min-width: 600px) {
-          .status-badge {
-            align-self: center;
-          }
-        }
-        .status-pending {
-          background: #ff9800;
-        }
-        .status-completed {
-          background: #4caf50;
-        }
-        .empty-state {
-          text-align: center;
-          padding: 40px 20px;
-          color: #666;
-          font-size: 16px;
-        }
-        .loading-state {
-          text-align: center;
-          padding: 20px;
-          color: #666;
-          font-size: 16px;
-        }
-        .ticket-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-          backdrop-filter: blur(4px);
-        }
-        .ticket-modal {
-          background: white;
-          border-radius: 16px;
-          max-width: 600px;
-          width: 90%;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-          position: relative;
-          z-index: 1001;
-        }
-        .ticket-modal-header {
-          background: #1976d2;
-          color: white;
-          padding: 20px 24px;
-          border-radius: 16px 16px 0 0;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .ticket-modal-title {
-          font-size: 20px;
-          font-weight: 600;
-          margin: 0;
-        }
-        .close-btn {
-          background: rgba(255, 255, 255, 0.2);
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          color: white;
-          border-radius: 50%;
-          width: 36px;
-          height: 36px;
-          cursor: pointer;
-          font-size: 18px;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s;
-        }
-        .close-btn:hover {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.5);
-        }
-        .ticket-modal-content {
-          padding: 24px;
-        }
-      `}</style>
+    <PageContainer background="#f5f5f5">
 
       {/* ヘッダー */}
-      <div className="admin-header">
-        <div className="admin-nav">
-          <button className="back-btn" onClick={() => navigate("/")}>
-            ← 戻る
-          </button>
-          <h1 className="admin-title">{eventTitle} - 管理画面</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {user && (
-              <div className="user-info">
-                {user.displayName}さん
-              </div>
-            )}
-            <button 
-              className="back-btn"
-              onClick={signOutUser}
-              style={{ fontSize: '12px', padding: '6px 12px' }}
-            >
-              ログアウト
-            </button>
-          </div>
-        </div>
-      </div>
+      <Header
+        title={`${eventTitle} - 管理画面`}
+        user={user}
+        onSignOut={signOutUser}
+        showBackButton
+        type="secondary"
+      />
 
       {/* メインコンテンツ */}
-      <div className="content-wrapper">
+      <ContentWrapper maxWidth="1000px">
         {/* イベント情報セクション */}
         {eventData ? (
-          <div className="section-card" style={{ marginBottom: '24px' }}>
-            <div className="section-header">
-              <h2 className="section-title">📅 イベント情報</h2>
-            </div>
-            <div className="section-content">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <div>
+          <Card style={{ marginBottom: '24px' }} className={styles.responsiveCard}>
+            <CardHeader>
+              <h2 className={styles.sectionTitle}>📅 イベント情報</h2>
+            </CardHeader>
+            <CardContent>
+              <div className={styles.eventInfoGrid}>
+                <div className={styles.eventInfoText}>
                   <strong>タイトル:</strong> {eventData.title}
                 </div>
                 {eventData.dates && eventData.dates.length > 0 && (
-                  <div>
+                  <div className={styles.eventInfoText}>
                     <strong>開催日:</strong> {eventData.dates.join(', ')}
                   </div>
                 )}
                 {eventData.location && (
-                  <div>
+                  <div className={styles.eventInfoText}>
                     <strong>場所:</strong> {eventData.location}
                   </div>
                 )}
                 {eventData.price !== undefined && (
-                  <div>
+                  <div className={styles.eventInfoText}>
                     <strong>料金:</strong> ¥{eventData.price.toLocaleString()}
                   </div>
                 )}
-                <div>
+                <div className={styles.eventInfoText}>
                   <strong>ステータス:</strong> {eventData.status || '不明'}
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="section-card" style={{ marginBottom: '24px' }}>
-            <div className="section-header">
-              <h2 className="section-title">⚠️ イベントが見つかりません</h2>
-            </div>
-            <div className="section-content">
-              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+          <Card style={{ marginBottom: '24px' }} className={styles.responsiveCard}>
+            <CardHeader>
+              <h2 className={styles.sectionTitle}>⚠️ イベントが見つかりません</h2>
+            </CardHeader>
+            <CardContent>
+              <div className={styles.errorMessage}>
                 <p>「{eventTitle}」というイベントが見つかりませんでした。</p>
                 <p>先にownerページでイベントを作成してください。</p>
-                <button 
-                  style={{
-                    background: '#666',
-                    color: 'white',
-                    border: 'none',
-                    padding: '12px 24px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    marginTop: '12px'
-                  }}
+                <Button 
+                  className={styles.navigationButton}
                   onClick={() => navigate("/owner")}
                 >
                   ownerページへ移動
-                </button>
+                </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* チケット作成セクション */}
-        <div className="section-card">
-          <div className="section-header">
-            <h2 className="section-title">🎫 新しいチケット作成</h2>
-          </div>
-          <div className="section-content">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <input
-                type="text"
-                className="form-input"
+        <Card>
+          <CardHeader>
+            <h2 className={styles.sectionTitle}>🎫 新しいチケット作成</h2>
+          </CardHeader>
+          <CardContent>
+            <div className={styles.ticketForm}>
+              <Input
                 placeholder="来場者の名前（フルネーム・漢字）を入力してください"
                 value={visitorName}
                 onChange={(e) => setVisitorName(e.target.value)}
               />
-              <input
-                type="text"
-                className="form-input"
+              <Input
                 placeholder="バンド名を入力してください"
                 value={bandName}
                 onChange={(e) => setBandName(e.target.value)}
               />
-              <button 
-                className="create-btn"
+              <Button 
                 onClick={createTicket}
                 disabled={loading}
                 style={{ marginTop: '8px' }}
               >
                 {loading ? "🔄 作成中..." : "✨ チケット作成"}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
-
-
+          </CardContent>
+        </Card>
 
         {/* チケット一覧セクション */}
-        <div className="section-card">
-          <div className="section-header">
-            <div className="tickets-header">
-              <h2 className="section-title">📋 発行済みチケット一覧</h2>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button 
-                  className="refresh-btn" 
+        <Card>
+          <CardHeader>
+            <div className={styles.ticketsHeader}>
+              <h2 className={styles.sectionTitle}>📋 発行済みチケット一覧</h2>
+              <div className={styles.buttonGroup}>
+                <Button 
+                  size="sm"
                   onClick={fetchTickets} 
                   disabled={loading}
+                  style={{ background: '#ff9800' }}
                 >
                   🔄 更新
-                </button>
-                <button 
-                  className="refresh-btn"
-                  onClick={async () => {
-                    try {
-                      const eventCollectionName = eventTitle.trim()
-                        .replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '')
-                        .replace(/\s+/g, '') || `event_${Date.now()}`;
-                      
-                      const eventDocs = await getDocs(collection(db, eventCollectionName));
-                      if (!eventDocs.empty) {
-                        const eventDoc = eventDocs.docs[0];
-                        const eventUuid = eventDoc.id;
-                        await migrateStateToStatus(eventCollectionName, eventUuid);
-                        alert("データ移行が完了しました。「更新」ボタンでチケット一覧を再読み込みしてください。");
-                      } else {
-                        alert("イベントが見つかりません。");
-                      }
-                    } catch (error) {
-                      console.error("Migration error:", error);
-                      alert("データ移行中にエラーが発生しました。");
-                    }
-                  }}
-                  disabled={loading}
-                  style={{ background: '#ff9800' }}
-                  title="既存のstateフィールドをstatusに移行"
-                >
-                  🔧 データ移行
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
-          <div className="section-content">
+          </CardHeader>
+          <CardContent>
             {loading ? (
-              <div className="loading-state">読み込み中...</div>
+              <div className={styles.loadingState}>読み込み中...</div>
             ) : tickets.length > 0 ? (
-              <ul className="ticket-list">
+              <ul className={styles.ticketList}>
                 {tickets.map((ticket) => (
-                  <li key={ticket.uuid} className="ticket-item">
-                    <div className="ticket-info">
+                  <li key={ticket.uuid} className={styles.ticketItem}>
+                    <div className={styles.ticketInfo}>
                       <button 
-                        className="ticket-name"
+                        className={styles.ticketName}
                         onClick={() => handleTicketNameClick(ticket)}
                         title="クリックしてチケットを表示"
                         aria-label={`${ticket.name}さんのチケットを表示`}
@@ -982,360 +498,87 @@ export default function AdminPage() {
                       >
                         {ticket.name}
                       </button>
-                      <p className="ticket-details">
+                      <p className={styles.ticketDetails}>
                         🎸 バンド: {ticket.bandName} | UUID: {ticket.uuid} | 作成者: {ticket.createdBy}
                       </p>
                     </div>
-                    <span 
-                      className={`status-badge ${ticket.status === "済" ? "status-completed" : "status-pending"}`}
-                    >
-                      {ticket.status === "済" ? "✓ 入場済み" : "⏳ 未入場"}
-                    </span>
+                    <StatusBadge status={ticket.status} />
                   </li>
                 ))}
               </ul>
             ) : (
-              <div className="empty-state">
+              <div className={styles.emptyState}>
                 まだチケットが発行されていません
               </div>
             )}
-          </div>
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      </ContentWrapper>
 
       {/* 新規作成チケット表示オーバーレイ */}
-      {showTicketDisplay && createdTicket && (
-        <div 
-          className="ticket-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ticket-modal-title"
+      {showTicketDisplay && createdTicket && eventData && (
+        <Modal
+          isOpen={showTicketDisplay}
+          onClose={() => setShowTicketDisplay(false)}
+          title="📱 生成されたチケット"
         >
-          <button 
-            className="overlay-backdrop"
-            onClick={() => setShowTicketDisplay(false)}
-            aria-label="モーダルを閉じる"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          />
-          <div className="ticket-modal">
-            <div className="ticket-modal-header">
-              <h2 id="ticket-modal-title" className="ticket-modal-title">📱 生成されたチケット</h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowTicketDisplay(false)}
-                title="閉じる"
-              >
-                ×
-              </button>
-            </div>
-            <div className="ticket-modal-content">
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <strong>下記の画像をスクリーンショットしてください。</strong>
-              </div>
-              
-              <div style={{ 
-                backgroundColor: 'white', 
-                color: 'black', 
-                padding: '20px', 
-                borderRadius: '8px',
-                marginBottom: '16px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                border: '2px solid black'
-              }}>
-                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  {createdTicket.name}さん用入場チケット
-                </div>
-                <div style={{ 
-                  fontSize: '28px', 
-                  fontWeight: '600',
-                  textAlign: 'center', 
-                  margin: '16px 0',
-                  fontFamily: 'Irish Grover, cursive' 
-                }}>
-                  {eventData?.title || eventTitle}
-                </div>
-                <div style={{ fontSize: '14px', textAlign: 'right', marginBottom: '16px' }}>
-                  {eventData?.location ? `in ${eventData.location}` : 'in Suzuka Sound Stage'}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    {eventData?.dates && eventData.dates.length > 0 && (
-                      <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                        Date: {eventData.dates.map(date => {
-                          // 日付文字列から月日のみを抽出（例：2024-12-25T18:00 → 12/25）
-                          try {
-                            const dateObj = new Date(date);
-                            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
-                          } catch {
-                            return date;
-                          }
-                        }).join(', ')}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                      Open: {(() => {
-                        // datesから時間を抽出してHH:MM形式で表示
-                        if (eventData?.dates && eventData.dates.length > 0) {
-                          try {
-                            const firstDate = eventData.dates[0];
-                            if (firstDate.includes('T')) {
-                              // datetime-local形式（YYYY-MM-DDTHH:MM）から時間部分を抽出
-                              const timePart = firstDate.split('T')[1];
-                              return timePart || '18:00';
-                            } else {
-                              // 時間情報がない場合は日付から時間を抽出
-                              const dateObj = new Date(firstDate);
-                              const hours = dateObj.getHours().toString().padStart(2, '0');
-                              const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-                              return `${hours}:${minutes}`;
-                            }
-                          } catch {
-                            return '18:00';
-                          }
-                        }
-                        return eventData?.openTime || '18:00';
-                      })()}
-                    </div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                      バンド: {createdTicket.bandName}
-                    </div>
-                    {eventData?.price !== undefined && (
-                      <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                        Price: ¥{eventData.price.toLocaleString()}{(() => {
-                          // oneDrinkがundefinedの場合はデフォルトでtrueとして扱う（owner.tsxと同じ）
-                          const isOneDrink = eventData?.oneDrink !== undefined ? eventData.oneDrink : true;
-                          console.log('🍺 oneDrink check:', { 
-                            original: eventData?.oneDrink, 
-                            processed: isOneDrink,
-                            shouldShow: isOneDrink ? 'YES' : 'NO'
-                          });
-                          return isOneDrink ? ' + 1dr' : '';
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                  <QRCodeCanvas 
-                    value={`${window.location.origin}/ticket/${currentEventCollectionName}/${currentEventUuid}/${createdTicket.uuid}`} 
-                    size={75} 
-                    level="H" 
-                  />
-                </div>
-              </div>
-              
-              <div style={{ 
-                backgroundColor: 'white', 
-                color: 'black', 
-                padding: '20px', 
-                borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                border: '2px solid black'
-              }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '12px', fontSize: '14px' }}>
-                  *注意事項*
-                </div>
-                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  ・当日はドリンク代として500円を持ってきてください。
-                </div>
-                <div style={{ fontSize: '14px', marginBottom: '16px' }}>
-                  ・ライブハウスには駐車場がないので電車、バスの利用をお願いします。
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                    会場の場所はこちら↓
-                  </div>
-                  <div style={{ fontSize: '14px' }}>
-                    {eventData?.location || '〒510-0256 三重県鈴鹿市磯山1-9-8'}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className={styles.modalContent}>
+            <strong>下記の画像をスクリーンショットしてください。</strong>
           </div>
-        </div>
+          
+          <TicketDisplay
+            ticket={createdTicket}
+            event={eventData}
+            eventTitle={eventTitle}
+            eventCollectionName={currentEventCollectionName}
+            eventUuid={currentEventUuid}
+          />
+        </Modal>
       )}
 
       {/* 既存チケット表示オーバーレイ */}
-      {showSelectedTicketDisplay && selectedTicket && (
-        <div 
-          className="ticket-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="selected-ticket-modal-title"
+      {showSelectedTicketDisplay && selectedTicket && eventData && (
+        <Modal
+          isOpen={showSelectedTicketDisplay}
+          onClose={() => setShowSelectedTicketDisplay(false)}
+          title={`📱 ${selectedTicket.name}さんのチケット`}
         >
-          <button 
-            className="overlay-backdrop"
-            onClick={() => setShowSelectedTicketDisplay(false)}
-            aria-label="モーダルを閉じる"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer'
-            }}
+          <div className={styles.modalContent}>
+            <strong>発行済みチケットの再表示</strong>
+          </div>
+          
+          <TicketDisplay
+            ticket={selectedTicket}
+            event={eventData}
+            eventTitle={eventTitle}
+            eventCollectionName={currentEventCollectionName}
+            eventUuid={currentEventUuid}
           />
-          <div className="ticket-modal">
-            <div className="ticket-modal-header">
-              <h2 id="selected-ticket-modal-title" className="ticket-modal-title">📱 {selectedTicket.name}さんのチケット</h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowSelectedTicketDisplay(false)}
-                title="閉じる"
-              >
-                ×
-              </button>
+          
+          <div className={styles.ticketStatusDisplay}
+            style={{
+              backgroundColor: selectedTicket.status === "済" ? '#ffebee' : '#e8f5e8',
+              borderColor: selectedTicket.status === "済" ? '#f44336' : '#4caf50'
+            }}>
+            <div style={{ 
+              fontSize: '16px', 
+              fontWeight: 'bold',
+              color: selectedTicket.status === "済" ? '#c62828' : '#2e7d32',
+              marginBottom: '8px'
+            }}>
+              {selectedTicket.status === "済" ? "⚠️ 入場済みチケット" : "✅ 未使用チケット"}
             </div>
-            <div className="ticket-modal-content">
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <strong>発行済みチケットの再表示</strong>
-              </div>
-              
-              <div style={{ 
-                backgroundColor: 'white', 
-                color: 'black', 
-                padding: '20px', 
-                borderRadius: '8px',
-                marginBottom: '16px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                border: '2px solid black'
-              }}>
-                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  {selectedTicket.name}さん用入場チケット
-                </div>
-                <div style={{ 
-                  fontSize: '28px', 
-                  fontWeight: '600',
-                  textAlign: 'center', 
-                  margin: '16px 0',
-                  fontFamily: 'Irish Grover, cursive' 
-                }}>
-                  {eventData?.title || eventTitle}
-                </div>
-                <div style={{ fontSize: '14px', textAlign: 'right', marginBottom: '16px' }}>
-                  {eventData?.location ? `in ${eventData.location}` : 'in Suzuka Sound Stage'}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    {eventData?.dates && eventData.dates.length > 0 && (
-                      <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                        Date: {eventData.dates.map(date => {
-                          try {
-                            const dateObj = new Date(date);
-                            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
-                          } catch {
-                            return date;
-                          }
-                        }).join(', ')}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                      Open: {(() => {
-                        if (eventData?.dates && eventData.dates.length > 0) {
-                          try {
-                            const firstDate = eventData.dates[0];
-                            if (firstDate.includes('T')) {
-                              const timePart = firstDate.split('T')[1];
-                              return timePart || '18:00';
-                            } else {
-                              const dateObj = new Date(firstDate);
-                              const hours = dateObj.getHours().toString().padStart(2, '0');
-                              const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-                              return `${hours}:${minutes}`;
-                            }
-                          } catch {
-                            return '18:00';
-                          }
-                        }
-                        return eventData?.openTime || '18:00';
-                      })()}
-                    </div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                      バンド: {selectedTicket.bandName}
-                    </div>
-                    {eventData?.price !== undefined && (
-                      <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                        Price: ¥{eventData.price.toLocaleString()}{(() => {
-                          const isOneDrink = eventData?.oneDrink !== undefined ? eventData.oneDrink : true;
-                          return isOneDrink ? ' + 1dr' : '';
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                  <QRCodeCanvas 
-                    value={`${window.location.origin}/ticket/${currentEventCollectionName}/${currentEventUuid}/${selectedTicket.uuid}`} 
-                    size={75} 
-                    level="H" 
-                  />
-                </div>
-              </div>
-              
-              <div style={{ 
-                backgroundColor: 'white', 
-                color: 'black', 
-                padding: '20px', 
-                borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                border: '2px solid black'
-              }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '12px', fontSize: '14px' }}>
-                  *注意事項*
-                </div>
-                <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                  ・当日はドリンク代として500円を持ってきてください。
-                </div>
-                <div style={{ fontSize: '14px', marginBottom: '16px' }}>
-                  ・ライブハウスには駐車場がないので電車、バスの利用をお願いします。
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                    会場の場所はこちら↓
-                  </div>
-                  <div style={{ fontSize: '14px' }}>
-                    {eventData?.location || '〒510-0256 三重県鈴鹿市磯山1-9-8'}
-                  </div>
-                </div>
-              </div>
-              
-              <div style={{ 
-                textAlign: 'center', 
-                marginTop: '20px',
-                padding: '16px',
-                backgroundColor: selectedTicket.status === "済" ? '#ffebee' : '#e8f5e8',
-                borderRadius: '8px',
-                border: `2px solid ${selectedTicket.status === "済" ? '#f44336' : '#4caf50'}`
-              }}>
-                <div style={{ 
-                  fontSize: '16px', 
-                  fontWeight: 'bold',
-                  color: selectedTicket.status === "済" ? '#c62828' : '#2e7d32',
-                  marginBottom: '8px'
-                }}>
-                  {selectedTicket.status === "済" ? "⚠️ 入場済みチケット" : "✅ 未使用チケット"}
-                </div>
-                <div style={{ 
-                  fontSize: '14px',
-                  color: selectedTicket.status === "済" ? '#d32f2f' : '#388e3c'
-                }}>
-                  {selectedTicket.status === "済" 
-                    ? "このチケットは既に使用されています" 
-                    : "このチケットはまだ使用されていません"}
-                </div>
-              </div>
+            <div style={{ 
+              fontSize: '14px',
+              color: selectedTicket.status === "済" ? '#d32f2f' : '#388e3c'
+            }}>
+              {selectedTicket.status === "済" 
+                ? "このチケットは既に使用されています" 
+                : "このチケットはまだ使用されていません"}
             </div>
           </div>
-        </div>
+        </Modal>
       )}
-    </div>
+    </PageContainer>
   );
 }

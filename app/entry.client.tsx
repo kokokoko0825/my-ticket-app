@@ -7,22 +7,12 @@
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { CacheProvider } from "@emotion/react";
-import createCache from "@emotion/cache";
-
-// Material UI用のEmotionキャッシュをクライアント側でも作成
-const clientCache = createCache({
-  key: 'css',
-  prepend: true,
-});
 
 startTransition(() => {
   hydrateRoot(
     document,
     <StrictMode>
-      <CacheProvider value={clientCache}>
-        <RemixBrowser />
-      </CacheProvider>
+      <RemixBrowser />
     </StrictMode>
   );
 });

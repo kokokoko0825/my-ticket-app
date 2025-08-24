@@ -2,6 +2,31 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "@remix-run/react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../root";
+import { Button, PageContainer } from "../components";
+import {
+  ticketPageContainer,
+  ticketCard,
+  loadingCard,
+  ticketIcon,
+  successIcon,
+  errorIcon,
+  ticketTitle,
+  successTitle,
+  errorTitle,
+  ticketDescription,
+  successDescription,
+  ticketInfoCard,
+  statusBadge,
+  ticketName,
+  ticketDetails,
+  detailItem,
+  bandName,
+  eventName,
+  errorMessage,
+  errorText,
+  homeButton,
+  errorHomeButton,
+} from "../styles/pages/ticket-detail.css";
 
 interface TicketData {
   uuid: string;
@@ -70,6 +95,11 @@ export default function NewFormatTicketPage() {
       } else {
         console.log("⚠️ チケットは既に使用済み");
         setError("このチケットは既に使用済みです。");
+        
+        // 5秒後にホームページにリダイレクト
+        setTimeout(() => {
+          navigate("/");
+        }, 5000);
       }
 
     } catch (error) {
@@ -96,312 +126,96 @@ export default function NewFormatTicketPage() {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif"
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '1.25rem',
-          padding: '1.25rem',
-          textAlign: 'center',
-          boxShadow: '0 1rem 2rem rgba(0,0,0,0.12)',
-          maxWidth: '25rem',
-          width: '100%',
-          margin: '0 0.75rem',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            fontSize: '3rem',
-            marginBottom: '1.25rem',
-            animation: 'spin 2s linear infinite'
-          }}>
+      <PageContainer className={ticketPageContainer}>
+        <div className={loadingCard}>
+          <div className={ticketIcon}>
             🎫
           </div>
-          <h2 style={{ color: '#333', marginBottom: '0.625rem' }}>
+          <h2 className={ticketTitle}>
             チケット確認中...
           </h2>
-          <p style={{ color: '#666', margin: 0 }}>
+          <p className={ticketDescription}>
             しばらくお待ちください
           </p>
         </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
+      </PageContainer>
     );
   }
 
   if (success && ticketData) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-        padding: '1rem'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '1.25rem',
-          padding: '1.5rem',
-          textAlign: 'center',
-          boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
-          maxWidth: '500px',
-          width: '100%',
-          margin: '0 12px',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            fontSize: '3rem',
-            marginBottom: '1rem',
-            color: '#4CAF50'
-          }}>
+      <PageContainer className={ticketPageContainer}>
+        <div className={ticketCard}>
+          <div className={successIcon}>
             ✅
           </div>
-          <h1 style={{
-            color: '#4CAF50',
-            marginBottom: '1rem',
-            fontSize: '1.5rem'
-          }}>
+          <h1 className={successTitle}>
             入場完了！
           </h1>
-          <div style={{
-            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-            borderRadius: '1rem',
-            padding: '1.25rem',
-            marginBottom: '1.25rem',
-            position: 'relative',
-            border: '2px solid #e1e5e9'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              background: '#4CAF50',
-              color: 'white',
-              borderRadius: '1.25rem',
-              padding: '0.25rem 0.75rem',
-              fontSize: '0.75rem',
-              fontWeight: '600'
-            }}>
+          <div className={ticketInfoCard}>
+            <div className={statusBadge}>
               入場済み
             </div>
-            <h3 style={{ 
-              color: '#212121', 
-              marginBottom: '0.75rem', 
-              fontSize: '1.25rem',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem'
-            }}>
+            <h3 className={ticketName}>
               👤 {ticketData.name}さん
             </h3>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-              textAlign: 'left'
-            }}>
-              <div style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 0.75rem',
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: '0.75rem'
-              }}>
-                <span style={{ fontSize: '1rem' }}>🎸</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1976d2' }}>
+            <div className={ticketDetails}>
+              <div className={detailItem}>
+                <span>🎸</span>
+                <span className={bandName}>
                   {ticketData.bandName}
                 </span>
               </div>
-              <div style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 0.75rem',
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: '0.75rem'
-              }}>
-                <span style={{ fontSize: '1rem' }}>🎫</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#757575' }}>
+              <div className={detailItem}>
+                <span>🎫</span>
+                <span className={eventName}>
                   {eventCollectionName}
                 </span>
               </div>
             </div>
           </div>
-          <p style={{
-            color: '#666',
-            marginBottom: '1.25rem',
-            lineHeight: '1.6',
-            fontSize: '0.875rem'
-          }}>
+          <p className={successDescription}>
             {message}
             <br />
             <small>5秒後に自動的にホームページに戻ります</small>
           </p>
-          <button
+          <Button
             onClick={handleReturnHome}
-            style={{
-              background: 'linear-gradient(135deg, #4CAF50, #2e7d32)',
-              color: 'white',
-              border: 'none',
-              padding: '1rem 2rem',
-              borderRadius: '1.875rem',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontWeight: '700',
-              minHeight: '3.5rem',
-              touchAction: 'manipulation',
-              boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 16px rgba(76, 175, 80, 0.3)';
-            }}
+            className={homeButton}
           >
             🏠 ホームに戻る
-          </button>
+          </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (error) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-        padding: '1rem'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '1.25rem',
-          padding: '1.5rem',
-          textAlign: 'center',
-          boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
-          maxWidth: '500px',
-          width: '100%',
-          margin: '0 12px',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            fontSize: '3rem',
-            marginBottom: '1rem',
-            color: '#f44336'
-          }}>
+      <PageContainer className={ticketPageContainer}>
+        <div className={ticketCard}>
+          <div className={errorIcon}>
             ❌
           </div>
-          <h1 style={{
-            color: '#f44336',
-            marginBottom: '1rem',
-            fontSize: '1.5rem'
-          }}>
+          <h1 className={errorTitle}>
             エラーが発生しました
           </h1>
-          <div style={{
-            background: '#ffebee',
-            borderRadius: '0.75rem',
-            padding: '1.25rem',
-            marginBottom: '1.25rem'
-          }}>
-            <p style={{ color: '#c62828', margin: 0, fontWeight: '500' }}>
+          <div className={errorMessage}>
+            <p className={errorText}>
               {error}
             </p>
           </div>
-          <div style={{
-            background: '#f8f9fa',
-            borderRadius: '0.75rem',
-            padding: '1.25rem',
-            marginBottom: '1.25rem',
-            textAlign: 'left'
-          }}>
-            <h4 style={{ color: '#333', marginBottom: '0.625rem' }}>📋 Firestore パス情報:</h4>
-            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
-              コレクション: {eventCollectionName}
-            </p>
-            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
-              イベントUUID: {eventUuid}
-            </p>
-            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
-              チケットUUID: {ticketUuid}
-            </p>
-            <p style={{ color: '#666', margin: '0.3125rem 0', fontSize: '0.875rem' }}>
-              完全パス: {eventCollectionName}/{eventUuid}/tickets/{ticketUuid}
-            </p>
-          </div>
-          <div style={{
-            background: '#fff3e0',
-            borderRadius: '0.75rem',
-            padding: '1.25rem',
-            marginBottom: '1.875rem',
-            textAlign: 'left'
-          }}>
-            <h4 style={{ color: '#ef6c00', marginBottom: '0.625rem' }}>💡 推奨対策:</h4>
-            <ul style={{ color: '#bf360c', margin: 0, paddingLeft: '1.25rem', fontSize: '0.875rem' }}>
-              <li>admin.tsx画面でチケットが正しく作成されているか確認</li>
-              <li>owner.tsx画面でイベントが存在するか確認</li>
-              <li>Firestoreでコレクション「{eventCollectionName}」が存在するか確認</li>
-              <li>ネットワーク接続を確認してから再試行</li>
-            </ul>
-          </div>
-          <button
+          <p className={successDescription}>
+            5秒後に自動的にホームページに戻ります
+          </p>
+          <Button
             onClick={handleReturnHome}
-            style={{
-              background: 'linear-gradient(135deg, #757575, #616161)',
-              color: 'white',
-              border: 'none',
-              padding: '1rem 2rem',
-              borderRadius: '1.875rem',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontWeight: '700',
-              minHeight: '3.5rem',
-              touchAction: 'manipulation',
-              boxShadow: '0 4px 16px rgba(117, 117, 117, 0.3)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(117, 117, 117, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 16px rgba(117, 117, 117, 0.3)';
-            }}
+            className={errorHomeButton}
           >
             🏠 ホームに戻る
-          </button>
+          </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 

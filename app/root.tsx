@@ -17,12 +17,28 @@ import {
 } from "@remix-run/react";
 
 import firebase from "firebase/compat/app";
-import Button from "@mui/material/Button";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-// Material UIのスタイルはentry.client.tsxとentry.server.tsxで管理
+import { Button, Container } from "./components";
 
-import Container from "@mui/material/Container";
+// Vanilla ExtractスタイルをインポートしてCSSを生成
+import "~/styles/global.css";
+import "~/styles/admin.css";
+import "~/styles/qr-reader.css";
+import "~/styles/ui/card.css";
+import "~/styles/ui/button.css";
+import "~/styles/ui/input.css";
+import "~/styles/ui/container.css";
+import "~/styles/ui/modal.css";
+import "~/styles/ui/status-badge.css";
+import "~/styles/layout/header.css";
+import "~/styles/layout/page-container.css";
+import "~/styles/layout/content-wrapper.css";
+import "~/styles/forms/form-group.css";
+import "~/styles/forms/form-row.css";
+import "~/styles/pages/index.css";
+import "~/styles/pages/ticket.css";
+import "~/styles/pages/owner.css";
+import "~/styles/pages/owner-modal.css";
+import "~/styles/pages/ticket-detail.css";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCNs9z34dPvegE073RHwmZw3CLYmJ-NsC8",
@@ -44,240 +60,56 @@ if (!getApps().length) {
 export const db = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
 
-// MUIテーマの作成（モバイルファースト設計）
-export const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-    },
-    secondary: {
-      main: '#dc004e',
-      light: '#ff5983',
-      dark: '#9a0036',
-    },
-    background: {
-      default: '#f8f9fa',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#212121',
-      secondary: '#757575',
-    },
+// アプリケーションテーマ設定（プレーンなCSS変数として定義）
+export const appTheme = {
+  colors: {
+    primary: '#1976d2',
+    primaryLight: '#42a5f5',
+    primaryDark: '#1565c0',
+    secondary: '#dc004e',
+    secondaryLight: '#ff5983',
+    secondaryDark: '#9a0036',
+    success: '#388e3c',
+    error: '#d32f2f',
+    warning: '#ff9800',
+    background: '#f8f9fa',
+    paper: '#ffffff',
+    textPrimary: '#212121',
+    textSecondary: '#757575',
   },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    // モバイルファーストなフォントサイズ
-    h1: {
-      fontSize: '1.75rem',
-      fontWeight: 600,
-      lineHeight: 1.2,
-      '@media (min-width:600px)': {
-        fontSize: '2.25rem',
-      },
-      '@media (min-width:960px)': {
-        fontSize: '2.75rem',
-      },
-    },
-    h2: {
-      fontSize: '1.375rem',
-      fontWeight: 600,
-      lineHeight: 1.3,
-      '@media (min-width:600px)': {
-        fontSize: '1.75rem',
-      },
-    },
-    h3: {
-      fontSize: '1.125rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      '@media (min-width:600px)': {
-        fontSize: '1.375rem',
-      },
-    },
-    body1: {
-      fontSize: '0.875rem',
-      lineHeight: 1.6,
-      '@media (min-width:600px)': {
-        fontSize: '1rem',
-      },
-    },
-    body2: {
-      fontSize: '0.8125rem',
-      lineHeight: 1.5,
-      '@media (min-width:600px)': {
-        fontSize: '0.875rem',
-      },
-    },
-    button: {
-      fontSize: '0.875rem',
-      fontWeight: 600,
-      textTransform: 'none',
-    },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+  },
+  borderRadius: {
+    sm: '0.5rem',
+    md: '0.75rem',
+    lg: '1rem',
+    xl: '1.25rem',
   },
   breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 960,
-      lg: 1280,
-      xl: 1920,
-    },
+    xs: 0,
+    sm: 600,
+    md: 960,
+    lg: 1280,
+    xl: 1920,
   },
-  spacing: 0.5, // 0.5rem基準のスペーシング
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        html: {
-          // モバイルでの縦向きロック時の拡大を防ぐ
-          textSizeAdjust: '100%',
-          WebkitTextSizeAdjust: '100%',
-        },
-        body: {
-          fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-          margin: 0,
-          padding: 0,
-          backgroundColor: '#f8f9fa',
-          // タッチデバイスでのスクロール改善
-          WebkitOverflowScrolling: 'touch',
-          // モバイルでのタップハイライト色を調整
-          WebkitTapHighlightColor: 'rgba(25, 118, 210, 0.15)',
-          // モバイルでのスクロールバー非表示
-          scrollbarWidth: 'thin',
-          '&::-webkit-scrollbar': {
-            width: '0.25rem',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'rgba(0,0,0,0.2)',
-            borderRadius: '0.125rem',
-          },
-        },
-        '*': {
-          boxSizing: 'border-box',
-        },
-        // モバイルでの拡大縮小を防ぐ（1rem以上でズーム防止）
-        'input, textarea, select': {
-          fontSize: '1rem !important',
-          fontFamily: 'inherit',
-          maxWidth: '100%',
-          width: '100%',
-          WebkitTextSizeAdjust: '100%',
-          textSizeAdjust: '100%',
-        },
-        // フォーカス時のアウトライン改善
-        'button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible': {
-          outline: '0.125rem solid #1976d2',
-          outlineOffset: '0.125rem',
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          borderRadius: '12px',
-          fontWeight: 600,
-          // モバイルでのタッチ操作最適化
-          minHeight: '3rem',
-          minWidth: '3rem',
-          padding: '0.75rem 1.5rem',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          // タッチデバイスでのhover無効化
-          '@media (hover: none)': {
-            '&:hover': {
-              backgroundColor: 'inherit',
-            },
-          },
-          // タッチフィードバック
-          '&:active': {
-            transform: 'scale(0.98)',
-          },
-        },
-        sizeSmall: {
-          minHeight: '2.5rem',
-          padding: '0.5rem 1rem',
-          fontSize: '0.8125rem',
-        },
-        sizeLarge: {
-          minHeight: '3.5rem',
-          padding: '1rem 2rem',
-          fontSize: '1rem',
-        },
-      },
-    },
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          paddingLeft: '1rem',
-          paddingRight: '1rem',
-          '@media (min-width:37.5rem)': {
-            paddingLeft: '1.5rem',
-            paddingRight: '1.5rem',
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: '1rem',
-          boxShadow: '0 0.125rem 0.5rem rgba(0,0,0,0.08)',
-          '@media (max-width:37.5rem)': {
-            borderRadius: '0.75rem',
-            margin: '0 0.5rem',
-          },
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '0.75rem',
-            fontSize: '1rem', // ズーム防止
-            '@media (max-width:37.5rem)': {
-              borderRadius: '0.5rem',
-            },
-          },
-        },
-      },
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#1976d2',
-          boxShadow: '0 0.125rem 0.5rem rgba(0,0,0,0.12)',
-        },
-      },
-    },
-    MuiFab: {
-      styleOverrides: {
-        root: {
-          // モバイルでのFABサイズ調整
-          '@media (max-width:37.5rem)': {
-            width: '4rem',
-            height: '4rem',
-          },
-        },
-      },
-    },
-  },
-});
+};
 
 export const meta: MetaFunction = () => {
   return[
     { charset: "utf-8" },
     { title: "電子チケット" },
-    { name: "viewport", content: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" },
+    { name: "viewport", content: "width=device-width, initial-scale=1.0, viewport-fit=auto" },
     { name: "apple-mobile-web-app-capable", content: "yes" },
     { name: "apple-mobile-web-app-status-bar-style", content: "default" },
     { name: "theme-color", content: "#1976d2" },
     { name: "msapplication-TileColor", content: "#1976d2" },
+    { name: "format-detection", content: "telephone=no" },
+    { name: "mobile-web-app-capable", content: "yes" },
   ]
 }
 
@@ -291,10 +123,6 @@ export const links: LinksFunction = () => [
   {
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/icon?family=Material+Icons",
   },
 ];
 
@@ -324,32 +152,57 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-            {user ? (
-              <Outlet />
-            ) : (
-              <Container maxWidth="sm" sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                minHeight: '100vh',
-                textAlign: 'center'
-              }}>
-                <Button 
-                  variant="contained" 
-                  onClick={signInWithGoogle}
-                  size="large"
-                >
-                  ログイン
-                </Button>
-              </Container>
-            )}
-            <ScrollRestoration />
-            <Scripts />
-            <LiveReload />
-        </ThemeProvider>
+        <style>{`
+          *, *::before, *::after {
+            box-sizing: border-box;
+          }
+          html {
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            color: #212121;
+            background-color: #f8f9fa;
+          }
+          button {
+            font-family: inherit;
+            cursor: pointer;
+            touch-action: manipulation;
+          }
+          input {
+            font-family: inherit;
+            font-size: 16px;
+          }
+        `}</style>
+        {user ? (
+          <Outlet />
+        ) : (
+          <Container 
+            maxWidth="sm" 
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              minHeight: '100vh',
+              textAlign: 'center'
+            }}
+          >
+            <Button 
+              onClick={signInWithGoogle}
+              size="lg"
+            >
+              ログイン
+            </Button>
+          </Container>
+        )}
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
       </body>
     </html>
   );
