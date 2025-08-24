@@ -18,6 +18,7 @@ import {
 
 import firebase from "firebase/compat/app";
 import { Button, Container } from "./components";
+import { DeviceProvider } from "./contexts/DeviceContext";
 
 // Vanilla ExtractスタイルをインポートしてCSSを生成
 import "~/styles/global.css";
@@ -103,13 +104,16 @@ export const meta: MetaFunction = () => {
   return[
     { charset: "utf-8" },
     { title: "電子チケット" },
-    { name: "viewport", content: "width=device-width, initial-scale=1.0, viewport-fit=auto" },
+    { name: "viewport", content: "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" },
     { name: "apple-mobile-web-app-capable", content: "yes" },
-    { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+    { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
     { name: "theme-color", content: "#1976d2" },
     { name: "msapplication-TileColor", content: "#1976d2" },
     { name: "format-detection", content: "telephone=no" },
     { name: "mobile-web-app-capable", content: "yes" },
+    { name: "HandheldFriendly", content: "true" },
+    { name: "MobileOptimized", content: "width" },
+    { name: "X-UA-Compatible", content: "IE=edge" },
   ]
 }
 
@@ -143,13 +147,12 @@ export default function App() {
     }
   };
 
-
-
   return (
     <html lang="ja">
       <head>
         <Meta />
         <Links />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
       </head>
       <body>
         <style>{`
@@ -160,6 +163,11 @@ export default function App() {
             font-size: 16px;
             line-height: 1.5;
             -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
           }
           body {
             margin: 0;
@@ -167,39 +175,90 @@ export default function App() {
             font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
             color: #212121;
             background-color: #f8f9fa;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            max-width: 100vw;
+          }
+          #root {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            max-width: 100vw;
           }
           button {
             font-family: inherit;
             cursor: pointer;
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
           }
           input {
             font-family: inherit;
             font-size: 16px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+          }
+          /* 強制的なモバイル対応 */
+          @media screen and (max-width: 768px) {
+            html, body {
+              width: 100vw !important;
+              max-width: 100vw !important;
+              overflow-x: hidden !important;
+              -webkit-overflow-scrolling: touch;
+            }
+            #root {
+              width: 100vw !important;
+              max-width: 100vw !important;
+              overflow-x: hidden !important;
+            }
+            * {
+              max-width: 100vw !important;
+              box-sizing: border-box !important;
+            }
+            html {
+              font-size: 14px;
+            }
+            button, input, select, textarea {
+              font-size: 16px !important;
+            }
+          }
+          /* 超小画面対応 */
+          @media screen and (max-width: 480px) {
+            html, body, #root {
+              width: 100vw !important;
+              max-width: 100vw !important;
+              overflow-x: hidden !important;
+            }
           }
         `}</style>
-        {user ? (
-          <Outlet />
-        ) : (
-          <Container 
-            maxWidth="sm" 
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              minHeight: '100vh',
-              textAlign: 'center'
-            }}
-          >
-            <Button 
-              onClick={signInWithGoogle}
-              size="lg"
+        <DeviceProvider>
+          {user ? (
+            <Outlet />
+          ) : (
+            <Container 
+              maxWidth="sm" 
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                minHeight: '100vh',
+                textAlign: 'center'
+              }}
             >
-              ログイン
-            </Button>
-          </Container>
-        )}
+              <Button 
+                onClick={signInWithGoogle}
+                size="lg"
+              >
+                ログイン
+              </Button>
+            </Container>
+          )}
+        </DeviceProvider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
