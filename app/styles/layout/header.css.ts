@@ -5,7 +5,7 @@ export const headerTypes = styleVariants({
     background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
   },
   secondary: {
-    background: '#1976d2',
+    background: 'linear-gradient(135deg, #dc004e, #ff5983)',
   },
   success: {
     background: 'linear-gradient(135deg, #388e3c, #2e7d32)',

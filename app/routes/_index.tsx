@@ -115,7 +115,7 @@ export default function Index() {
         <div className={responsiveGrid}>
           {/* イベント管理者向けセクション */}
           <Card hover className={sectionCard}>
-            <CardHeader>
+            <CardHeader type="secondary">
               <h2 className={sectionTitle}>👑 イベント管理者</h2>
             </CardHeader>
             <CardContent>
@@ -125,7 +125,7 @@ export default function Index() {
                 </p>
               </div>
               <div>
-                <Button onClick={navigateToOwner} size="lg">
+                <Button onClick={navigateToOwner} size="lg" type="secondary">
                   📋 イベント管理画面
                 </Button>
               </div>
@@ -134,7 +134,7 @@ export default function Index() {
           
           {/* チケット発行担当者向けセクション */}
           <Card hover className={sectionCard}>
-            <CardHeader type="secondary">
+            <CardHeader type="primary">
               <h2 className={sectionTitle}>🎫 チケット発行担当</h2>
             </CardHeader>
             <CardContent>
@@ -154,7 +154,7 @@ export default function Index() {
               </div>
               <div>
                 <Button 
-                  type="secondary"
+                  type="primary"
                   onClick={navigateToAdmin}
                   size="lg"
                 >

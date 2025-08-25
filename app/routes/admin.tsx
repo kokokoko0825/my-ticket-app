@@ -379,7 +379,7 @@ export default function AdminPage() {
         user={user}
         onSignOut={signOutUser}
         showBackButton
-        type="secondary"
+        type="primary"
       />
 
       {/* メインコンテンツ */}
@@ -387,7 +387,7 @@ export default function AdminPage() {
         {/* イベント情報セクション */}
         {eventData ? (
           <Card style={{ marginBottom: '24px' }} className={styles.responsiveCard}>
-            <CardHeader>
+            <CardHeader type="primary">
               <h2 className={styles.sectionTitle}>📅 イベント情報</h2>
             </CardHeader>
             <CardContent>
@@ -418,7 +418,7 @@ export default function AdminPage() {
           </Card>
         ) : (
           <Card style={{ marginBottom: '24px' }} className={styles.responsiveCard}>
-            <CardHeader>
+            <CardHeader type="primary">
               <h2 className={styles.sectionTitle}>⚠️ イベントが見つかりません</h2>
             </CardHeader>
             <CardContent>
@@ -438,7 +438,7 @@ export default function AdminPage() {
 
         {/* チケット作成セクション */}
         <Card>
-          <CardHeader>
+          <CardHeader type="primary">
             <h2 className={styles.sectionTitle}>🎫 新しいチケット作成</h2>
           </CardHeader>
           <CardContent>
@@ -466,7 +466,7 @@ export default function AdminPage() {
 
         {/* チケット一覧セクション */}
         <Card>
-          <CardHeader>
+          <CardHeader type="primary">
             <div className={styles.ticketsHeader}>
               <h2 className={styles.sectionTitle}>📋 発行済みチケット一覧</h2>
               <div className={styles.buttonGroup}>

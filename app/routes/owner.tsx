@@ -81,7 +81,7 @@ export default function OwnerDashboard() {
       }
 
       // 基本コレクション
-      const baseCollections = ["users", "events", "products"];
+      const baseCollections = ["events", "products"];
       
       // ユーザーが作成したイベントコレクションを動的に検出
       const userCreatedCollections: string[] = [];
@@ -159,8 +159,8 @@ export default function OwnerDashboard() {
       // 各コレクションが存在し、アクセス可能かチェック
       const existingCollections = [];
       for (const collectionName of allKnownCollections) {
-        // ticketsコレクションは除外
-        if (collectionName === "tickets") {
+        // ticketsコレクションとusersコレクションは除外
+        if (collectionName === "tickets" || collectionName === "users") {
           continue;
         }
         
@@ -530,6 +530,79 @@ export default function OwnerDashboard() {
 
     if (!auth.currentUser) {
       alert("ログインしてください。");
+      return;
+    }
+
+    // 同じタイトルのイベントが既に存在するかチェック（グローバルチェック）
+    try {
+      const trimmedTitle = eventTitle.trim();
+      
+      // 1. 既存のイベントコレクションから同じタイトルのイベントを検索
+      for (const collectionName of collections) {
+        // 基本コレクションはスキップ
+        if (["users", "events", "products", "events_overview"].includes(collectionName)) {
+          continue;
+        }
+        
+        try {
+          const eventSnapshot = await getDocs(collection(db, collectionName));
+          
+          for (const eventDoc of eventSnapshot.docs) {
+            const eventData = eventDoc.data() as DocumentData;
+            if (eventData.title === trimmedTitle) {
+              alert(`同じタイトルのイベント「${trimmedTitle}」が既に存在します。別のタイトルを入力してください。`);
+              return;
+            }
+          }
+        } catch (error) {
+          console.log(`Collection ${collectionName} check failed:`, error);
+        }
+      }
+      
+      // 2. グローバルコレクション登録簿から他のユーザーが作成したイベントもチェック
+      try {
+        const globalCollectionsRef = collection(db, "global_collections");
+        const globalSnapshot = await getDocs(globalCollectionsRef);
+        
+        for (const globalDoc of globalSnapshot.docs) {
+          const globalData = globalDoc.data();
+          if (globalData.eventTitle === trimmedTitle) {
+            alert(`同じタイトルのイベント「${trimmedTitle}」が他のユーザーによって既に作成されています。別のタイトルを入力してください。`);
+            return;
+          }
+        }
+      } catch (error) {
+        console.log("Global collections check failed:", error);
+        // グローバルチェックが失敗しても、ローカルチェックは成功しているので続行
+      }
+      
+      // 3. 既知のイベントコレクション名パターンもチェック
+      // イベントタイトルから生成されるコレクション名が既に存在するかチェック
+      const potentialCollectionName = trimmedTitle
+        .replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '')
+        .replace(/\s+/g, '');
+      
+      if (potentialCollectionName) {
+        try {
+          const potentialCollectionSnapshot = await getDocs(collection(db, potentialCollectionName));
+          if (!potentialCollectionSnapshot.empty) {
+            // このコレクション内のイベントタイトルをチェック
+            for (const eventDoc of potentialCollectionSnapshot.docs) {
+              const eventData = eventDoc.data() as DocumentData;
+              if (eventData.title === trimmedTitle) {
+                alert(`同じタイトルのイベント「${trimmedTitle}」が既に存在します。別のタイトルを入力してください。`);
+                return;
+              }
+            }
+          }
+        } catch (error) {
+          console.log(`Potential collection ${potentialCollectionName} check failed:`, error);
+        }
+      }
+      
+    } catch (error) {
+      console.error("Error checking for duplicate event titles:", error);
+      alert("重複チェック中にエラーが発生しました。もう一度お試しください。");
       return;
     }
 
@@ -1055,8 +1128,8 @@ export default function OwnerDashboard() {
         return;
       }
 
-      // 基本コレクション（tickets, users, events, products）の場合は通常の取得
-      const baseCollections = ["tickets", "users", "events", "products"];
+      // 基本コレクション（tickets, events, products）の場合は通常の取得
+      const baseCollections = ["tickets", "events", "products"];
       if (baseCollections.includes(selectedCollection)) {
         fetchDocuments(selectedCollection);
       } else {
@@ -1118,7 +1191,7 @@ export default function OwnerDashboard() {
   }, [collections, fetchEventsWithTickets]);
 
   // 統計情報を計算（フィルタリング後のデータで）
-  const baseCollections = ["tickets", "users", "events", "products"];
+  const baseCollections = ["tickets", "events", "products"];
   const isEventCollection = !baseCollections.includes(selectedCollection) && selectedCollection !== "events_overview";
   
   const totalDocuments = selectedCollection === "events_overview" 
@@ -2187,10 +2260,10 @@ export default function OwnerDashboard() {
                 : `${filteredDocuments.length} 件 / 全 ${documents.length} 件`
               }
             </div>
-            {(selectedCollection === "tickets" || 
-              selectedCollection === "events_overview" ||
-              (!["users", "events", "products"].includes(selectedCollection)) ||
-              filteredDocuments.some(doc => doc.status !== undefined)) && (
+                    {(selectedCollection === "tickets" || 
+          selectedCollection === "events_overview" ||
+          (!["events", "products"].includes(selectedCollection)) ||
+          filteredDocuments.some(doc => doc.status !== undefined)) && (
               <div style={{ display: "flex", gap: "8px" }}>
                 <button
                   onClick={() => bulkUpdateStatus("済")}
@@ -2497,17 +2570,17 @@ export default function OwnerDashboard() {
           <table className="visitors-table">
             <thead>
               <tr>
-                <th>Title/Tickets</th>
-                <th>バンド名</th>
-                {(selectedCollection === "tickets" || 
-                  (!["users", "events", "products"].includes(selectedCollection))) && 
-                  <th>ステータス</th>}
-                {selectedCollection === "events" && <th>開催日時</th>}
-                {selectedCollection === "events" && <th>場所</th>}
-                {selectedCollection === "events" && <th>値段</th>}
-                <th>作成者</th>
-                <th>作成日時</th>
-                <th>操作</th>
+                                  <th>Title/Tickets</th>
+                  <th>バンド名</th>
+                  {(selectedCollection === "tickets" || 
+                    (!["events", "products"].includes(selectedCollection))) && 
+                    <th>ステータス</th>}
+                  {selectedCollection === "events" && <th>開催日時</th>}
+                  {selectedCollection === "events" && <th>場所</th>}
+                  {selectedCollection === "events" && <th>値段</th>}
+                  <th>作成者</th>
+                  <th>作成日時</th>
+                  <th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -2527,7 +2600,7 @@ export default function OwnerDashboard() {
                     </div>
                   </td>
                   {(selectedCollection === "tickets" || 
-                    (!["users", "events", "products"].includes(selectedCollection))) && (
+                    (!["events", "products"].includes(selectedCollection))) && (
                     <td>
                       <StatusBadge 
                         status={document.status} 
