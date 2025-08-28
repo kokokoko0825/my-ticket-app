@@ -2,7 +2,7 @@ import React from 'react';
 import { input } from '~/styles/ui/input.css';
 
 interface InputProps {
-  type?: 'text' | 'email' | 'password' | 'number';
+  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'datetime-local';
   placeholder?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

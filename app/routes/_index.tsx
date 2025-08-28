@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
-import { auth } from "../root";
+import { auth, db } from "../root";
 import { signOut, onAuthStateChanged } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
 import firebase from "firebase/compat/app";
 import { 
   Button, 
@@ -56,16 +57,49 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   const [eventTitle, setEventTitle] = useState(""); // イベントタイトル入力フィールドの状態
+  const [eventDate, setEventDate] = useState(""); // 開催日時入力フィールドの状態 (YYYY-MM-DDTHH:mm)
   const [user, setUser] = useState<firebase.User | null>(null);
   const navigate = useNavigate();
 
-  const navigateToAdmin = () => {
+  const navigateToAdmin = async () => {
     if (!eventTitle.trim()) {
       alert("イベントタイトルを入力してください。");
       return;
     }
-    // イベントタイトルをURLパラメータとして渡してadminページに遷移
-    navigate(`/admin?title=${encodeURIComponent(eventTitle)}`);
+    if (!eventDate) {
+      alert("開催日を選択してください。");
+      return;
+    }
+    // Firestoreでタイトルと日時の両方が一致するイベントが存在するか検証
+    try {
+      const eventCollectionName = eventTitle.trim()
+        .replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '')
+        .replace(/\s+/g, '') || `event_${Date.now()}`;
+
+      const eventDocs = await getDocs(collection(db, eventCollectionName));
+      if (eventDocs.empty) {
+        alert("該当するイベントが見つかりませんでした。");
+        return;
+      }
+
+      const strictMatch = eventDocs.docs.find((d) => {
+        const data = d.data() as { title?: string; dates?: string[] };
+        const dates = data?.dates || [];
+        const firstDate = dates.length > 0 ? String(dates[0]) : '';
+        return data?.title === eventTitle && firstDate === eventDate;
+      });
+
+      if (!strictMatch) {
+        alert("タイトルまたは開催日が一致するイベントが見つかりませんでした。");
+        return;
+      }
+
+      // 一致を確認できたので遷移
+      navigate(`/admin?title=${encodeURIComponent(eventTitle)}&date=${encodeURIComponent(eventDate)}`);
+    } catch (e) {
+      console.error(e);
+      alert("イベント確認中にエラーが発生しました。");
+    }
   };
 
   const navigateToOwner = () => {
@@ -149,6 +183,15 @@ export default function Index() {
                     onChange={(e) => setEventTitle(e.target.value)}
                     inputMode="text"
                     autoComplete="off"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Input
+                    type="datetime-local"
+                    placeholder="開催日時を選択してください"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    aria-label="開催日時"
                   />
                 </FormGroup>
               </div>

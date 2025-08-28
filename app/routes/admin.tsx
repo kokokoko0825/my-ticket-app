@@ -48,6 +48,7 @@ export default function AdminPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const eventTitle = searchParams.get("title") || "";
+  const eventDate = searchParams.get("date") || "";
   const [visitorName, setVisitorName] = useState("");
   const [bandName, setBandName] = useState("");
   const [tickets, setTickets] = useState<TicketData[]>([]);
@@ -94,7 +95,18 @@ export default function AdminPage() {
       
       const eventDocs = await getDocs(collection(db, eventCollectionName));
       if (!eventDocs.empty) {
-        const eventDoc = eventDocs.docs[0];
+        // 厳密一致: title と dates[0] がどちらも一致
+        const matchingDoc = eventDocs.docs.find(d => {
+          const data = d.data() as { title?: string; dates?: string[] };
+          const dates = data?.dates || [];
+          const firstDate = dates.length > 0 ? String(dates[0]) : '';
+          return data?.title === eventTitle && firstDate === eventDate;
+        });
+        if (!matchingDoc) {
+          setEventData(null);
+          return;
+        }
+        const eventDoc = matchingDoc;
         const data = eventDoc.data();
         console.log('🔍 Raw event data from Firestore:', data);
         console.log('🔍 oneDrink value:', data.oneDrink, 'type:', typeof data.oneDrink);
@@ -115,7 +127,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error fetching event data:", error);
     }
-  }, [eventTitle]);
+  }, [eventTitle, eventDate]);
 
   // チケット一覧の取得
   const fetchTickets = useCallback(async () => {
@@ -136,9 +148,19 @@ export default function AdminPage() {
         setEventData(null);
         return;
       }
-
-      // イベントUUID（最初のドキュメント）を取得
-      const eventDoc = eventDocs.docs[0];
+      // 厳密一致: title と dates[0] がどちらも一致
+      const matchingDoc = eventDocs.docs.find(d => {
+        const data = d.data() as { title?: string; dates?: string[] };
+        const dates = data?.dates || [];
+        const firstDate = dates.length > 0 ? String(dates[0]) : '';
+        return data?.title === eventTitle && firstDate === eventDate;
+      });
+      if (!matchingDoc) {
+        setTickets([]);
+        setEventData(null);
+        return;
+      }
+      const eventDoc = matchingDoc;
       const eventUuid = eventDoc.id;
       
       // tickets サブコレクションから取得
@@ -174,13 +196,13 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, [eventTitle]);
+  }, [eventTitle, eventDate]);
 
   // 初回読み込み時とイベントタイトル変更時にデータを取得
   useEffect(() => {
     fetchEventData();
     fetchTickets();
-  }, [eventTitle, fetchEventData, fetchTickets]);
+  }, [eventTitle, eventDate, fetchEventData, fetchTickets]);
 
   // デバッグ用: showTicketDisplayの状態変化を監視
   useEffect(() => {
